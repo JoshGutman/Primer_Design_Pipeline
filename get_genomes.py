@@ -58,7 +58,9 @@ def parse_blast_output(target):
             if line.startswith("#"):
                 continue
             else:
-                out.append(line.split()[12])
+                seq = line.split()[12]
+                if len(seq) == 500:
+                    out.append(seq)
 
     return out
 
