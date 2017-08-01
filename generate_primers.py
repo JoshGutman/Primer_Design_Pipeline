@@ -1,26 +1,22 @@
-#TODO
-# Something wrong with reverse primer generation
-#   > base = genome[value - length + i - 1] incorrect?
-#   > Another reverse_complement needed somewhere?
-
-def find_degens(sequences, genomes):
+def generate_primers(sequences, genomes):
 
     # Key = sequence name
     # Val = Primer with amiguity codes
     out = {}
 
-    for seq in sequences:
+    for name in sequences:
 
-        orientation, value = seq.split("_")
+        orientation, value = name.split("_")
         value = int(value)
-        sequence = sequences[seq]
-        length = len(sequence)
-        
-        degens = [[sequence[i]] for i in range(length)]
-        
-        if orientation == "reverse":
-            sequences[seq] = reverse_complement(sequences[seq])
+        length = len(sequences[name])
 
+
+        if orientation == "reverse":
+            sequences[name] = reverse_complement(sequences[name])
+        
+        degens = [[sequences[name][i]] for i in range(length)]
+        
+        
 
         for genome in genomes:
             
@@ -28,18 +24,24 @@ def find_degens(sequences, genomes):
                 if orientation == "forward":
                     base = genome[value + i - 1]
                 elif orientation == "reverse":
-                    base = genome[value - length + i - 1]
-                    
-                if sequence[i] != base:
+                    base = genome[value - length + i]
+
+                if sequences[name][i] != base:
                     if base != "-":
                         if base not in degens[i]:
                             degens[i].append(base)
 
+
+        
         primer = ""
         for degen in degens:
             primer += get_code(sorted(degen))
 
-        out[seq] = primer
+        if "reverse" in name:
+            out[name] = reverse_complement(primer)
+
+        else:
+            out[name] = primer
 
     return out
 
@@ -49,17 +51,16 @@ def reverse_complement(sequence):
 
     out = ""
 
-    for i in range(len(sequence) - 1, -1, -1):
 
-        if sequence[i] == 'A':
-            out += 'T'
-        elif sequence[i] == 'C':
-            out += 'G'
-        elif sequence[i] == 'G':
-            out += 'C'
-        elif sequence[i] == 'T':
-            out += 'A'
-        else:
+    codes = {"A":"T", "C":"G", "G":"C", "T":"A", "R":"Y",
+             "Y":"R", "S":"S", "W":"W", "K":"M", "M":"K",
+             "B":"V", "V":"B", "D":"H", "H":"D", "N":"N"}
+
+
+    for i in range(len(sequence)-1, -1, -1):
+        try:
+            out += codes[sequence[i]]
+        except KeyError:
             raise ValueError("Non-ACGT char encountered when attempting to compute reverse complement\nSequence: {}".format(sequence))
 
     return out
@@ -98,13 +99,20 @@ def get_code(bases):
     else:
         raise ValueError("Unrecognized sequence of bases encountered when attempting to compute the ambiguity code\nSequence: {}".format(bases))
 
+
+
+
+
 if __name__ == "__main__":
 
     s = {'forward_167': 'CATCCGCAATGAGAGTAAAT', 'forward_99': 'ATAGTATCAACGCCGACATC', 'reverse_380': 'GGTCTGGATGGTTGAACTTA', 'reverse_244': 'GGCAAAAGCTATTTTCTCAA', 'forward_193': 'TTATCTCTTTCAGGGTCGTG', 'reverse_394': 'ATATCATAACGGGTGGTCTG', 'reverse_291': 'TTTTTCGTGAACTGGAAACT', 'forward_15': 'ATGGTTGGTGTCAGATCTTC'}
-    with open("..\\slurm-5821032.out", "rU") as f:
+
+    '''
+    with open("C:\\Users\\Josh\\Desktop\\primer_design_pipeline\\slurm-5821032.out") as f:
         g = f.readlines()[0]
 
-    
+
+ 
     g = g.replace("[", "")
     g = g.replace("]", "")
     g = g.replace("'", "")
@@ -112,5 +120,35 @@ if __name__ == "__main__":
     
     g = g.split(", ")
 
-    print(reverse_complement("GGCAAAAGTTATTTCCTCAA"))
-    print(find_degens(s, g))
+
+    '''
+    
+    genomes = []
+    genome = ""
+    with open("C:\\Users\\Josh\\Desktop\\primer_design_pipeline\\all_concatenated_aligned.fasta", "rU") as f:
+        for line in f:
+            if line.startswith(">"):
+                if genome == "":
+                    continue
+                if "." in genome:
+                    print(genome)
+                    print(line)
+                genomes.append(genome)
+                genome = ""
+            else:
+                genome += line.replace("\n", "")
+
+
+    
+
+
+    x = find_degens(s, genomes)
+    print(x)
+    normal = "ATCG"
+    for item in x:
+        count = 0
+        for name in x[item]:
+            if name not in normal:
+                count += 1
+        print(item + ": " + str(count))
+    
