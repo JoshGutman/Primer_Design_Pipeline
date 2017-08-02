@@ -2,6 +2,7 @@ import os
 import subprocess
 
 # Driver
+# Takes in fasta file with all primers
 def find_primer_conflicts(primer_fasta):
 
     primer_path = os.path.abspath(primer_fasta)
@@ -28,6 +29,7 @@ def parse_blast_output(output):
     # conflicts[8] should contain conflicts[8], conflicts[9], and conflicts[10].  Etc. etc.
     
 
+    # If there are no conflicts at a certain length, conflicts[length] == []
     for i in range(1, 11):
         conflicts[i] = []
 
@@ -36,6 +38,8 @@ def parse_blast_output(output):
         for line in f:
             fields = line.strip().split()
 
+            # What is fields[5]?
+            # fields[3] = length, fields[0] = primer #1, fields[1] = primer #2
             if int(fields[3]) <= 10 and int(fields[5]) == 0:
                 conflicts[int(fields[3])].append([fields[0], fields[1]])
 
