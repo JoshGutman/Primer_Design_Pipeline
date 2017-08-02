@@ -11,6 +11,7 @@ Is genome length of 500 a magic number? (Line 70)
 
 
 # Driver
+# Takes in target.fasta and directory with reference genomes
 def get_genomes(target, directory):
 
     directory = os.path.abspath(directory)
@@ -36,7 +37,8 @@ def combine_seqs(directory):
 
         for file in glob.glob(os.path.join(directory, "*.fasta")):
             f.write(">" + os.path.basename(file).replace(".fasta", "") + "\n")
-            
+
+            # BioPython dependancy
             with open(file) as temp_file:
                 for record in SeqIO.parse(temp_file, "fasta"):
                     f.write(str(record.seq) + "\n")
@@ -51,6 +53,7 @@ def run_blast(target, blast_type):
     if blast_type == "blastn":
         reduced_name = os.path.basename(target).replace(".fasta", "")
         subprocess.run('blastn -task blastn -query {} -db combined.seqs -out {}.blast.out -dust no -num_alignments 20000 -outfmt "7 std sseq"'.format(target, reduced_name), shell=True)
+    # Is tblastn needed?
     else:
         reduced_name = os.path.basename(target).replace(".pep", "")
         subprocess.run('tblastn -query {} -db combined.seqs -out {}.blast.out -seg no -num_alignments 20000 -outfmt "7 std sseq"'.format(target, reduced_name), shell=True)
@@ -72,7 +75,7 @@ def parse_blast_output(target):
                     outfile.write(fields[12] + "\n")
 
 
-
+# Is muscle needed?
 def parse_muscle_output():
 
     out = []
