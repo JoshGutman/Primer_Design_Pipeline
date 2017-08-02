@@ -2,34 +2,30 @@ import subprocess
 import os
 from Bio import SeqIO
 
+# Driver
+# Takes in primer3_template.txt, target.fasta, lower bound, upper bound
+def get_seqs(config_file, gene, lower, upper):
 
-def get_seqs(config_file, gene, upper, lower):
-
-    out = []
-
-    # Not needed if only one genome in target.fasta
-    with open(os.path.abspath(gene), "U") as infile:
-        for record in SeqIO.parse(infile, "fasta"):
-            gene_name = record.id
-            modify_input_file(config_file, gene, gene_name, upper, lower)
-            subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
-            out.append(parse_primer3_output("primer3_out"))
+    modify_input_file(config_file, gene, lower, upper)
+    subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
+    out = parse_primer3_output("primer3_out")
+    os.remove("primer3_out")
+    os.remove("config_modified.txt")
     return out
 
 
 
 
-def modify_input_file(config_file, gene, gene_name, upper, lower):
+# Modify primer3_template.txt to prepare for primer3_core
+def modify_input_file(config_file, gene, lower, upper):
 
-    sequence = ""
-
-    # Unneeded if only one genome in target.fasta
+    # Get marker name and sequence of target.fasta
     with open(gene, "U") as infile:
         for record in SeqIO.parse(infile, "fasta"):
-            if record.id == gene_name:
-                marker_name = record.id
-                sequence += str(record.seq)
+            marker_name = record.id
+            sequence = str(record.seq)
 
+    # Modify primer3_template.txt and save new version as config_modified.txt
     with open(config_file, "U") as config_in, open("config_modified.txt", "w") as config_out:
         for line in config_in:
             if line.startswith("SEQUENCE_ID"):
@@ -45,10 +41,13 @@ def modify_input_file(config_file, gene, gene_name, upper, lower):
 
 
 
+
+# Get the seqs from primer3_core output
 def parse_primer3_output(primer3_output):
 
-    nums = {}
-    seqs = {}
+    # Final output = forward_YY: sequence
+    nums = {}   # key = PRIMER_LEFT_X, value = YY
+    seqs = {}   # key = PRIMER_LEFT_X, value = sequence
 
     with open(primer3_output, "U") as infile:
         for line in infile:
@@ -63,6 +62,7 @@ def parse_primer3_output(primer3_output):
                 fields = line.split("=")
                 seqs[fields[0].replace("_SEQUENCE", "")] = fields[1].replace("\n", "")
 
+    # Get the primer value and sequence from nums and seqs
     out = {}
     for primer in nums:
         
