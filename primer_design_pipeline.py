@@ -1,6 +1,5 @@
 import argparse
 
-'''
 from get_seqs import get_seqs
 from get_genomes import get_genomes
 from generate_primers import generate_primers
@@ -13,7 +12,7 @@ def primer_design_pipeline(target, directory, config_file, lower, upper):
     primers = generate_primers(seqs, genomes)
 
     print(primers)
-'''
+
 
 
 if __name__ == "__main__":
