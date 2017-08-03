@@ -36,9 +36,10 @@ def get_genomes(target, directory):
         os.remove(file)
 
         # Remove target fasta variants (leave original target.fasta)
-    os.remove("{}.blast.out".format(target))
-    os.remove("{}.for".format(target))
-    os.remove("{}.rev".format(target))
+    target_name = os.path.splitext(target)[0]
+    os.remove("{}.blast.out".format(target_name))
+    os.remove("{}.for".format(target_name))
+    os.remove("{}.rev".format(target_name))
     
     
     
