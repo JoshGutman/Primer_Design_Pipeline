@@ -6,7 +6,7 @@ from Bio import SeqIO
 """
 Will tblastn ever be run?
 Is Muscle needed? (Probably not)
-Is genome length of 500 a magic number? (Line 70)
+Is genome length of 500 a magic number? (Line 89)
 """
 
 
@@ -23,7 +23,23 @@ def get_genomes(target, directory):
 
     subprocess.run("muscle -in tmp_muscle_in -out tmp_muscle_out.fasta", shell=True)
 
-    return parse_muscle_output()
+    out = parse_muscle_output()
+
+
+    # Remove excess files
+        # Remove muscle files
+    for file in glob.glob("tmp_muscle_*"):
+        os.remove(file)
+
+        # Remove blast database files
+    for file in glob.glob("combined.seqs*"):
+        os.remove(file)
+
+        # Remove target fasta variants (leave original target.fasta)
+    os.remove("{}.blast.out".format(target))
+    os.remove("{}.for".format(target))
+    os.remove("{}.rev".format(target))
+    
     
     
 
