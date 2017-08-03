@@ -40,6 +40,8 @@ def get_genomes(target, directory):
     os.remove("{}.blast.out".format(target_name))
     os.remove("{}.for".format(target_name))
     os.remove("{}.rev".format(target_name))
+
+    return out
     
     
     
