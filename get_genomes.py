@@ -21,7 +21,7 @@ def get_genomes(target, directory):
     run_blast(target, "blastn")
     parse_blast_output(target)
 
-    subprocess.run("muscle -in tmp_muscle_in -out tmp_muscle_out.fasta", shell=True)
+    subprocess.run("muscle -in tmp_muscle_in -out tmp_muscle_out.fasta > /dev/null 2>&1", shell=True)
 
     out = parse_muscle_output()
 
