@@ -1,5 +1,6 @@
 import subprocess
 import os
+import glob
 from Bio import SeqIO
 
 '''
@@ -9,11 +10,12 @@ ecoli-TARGET_LIST.TXT
 
 # Driver
 # Takes in primer3_template.txt, target.fasta, lower bound, upper bound
-def get_seqs(config_file, gene, lower, upper):
+def get_seqs(config_file, gene, directory, target_list, lower, upper):
 
     modify_input_file(config_file, gene, lower, upper)
     subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
     out = parse_primer3_output("primer3_out")
+    get_all_alignments(directory, target_list)
     os.remove("primer3_out")
     os.remove("config_modified.txt")
     return out
@@ -69,7 +71,8 @@ def parse_primer3_output(primer3_output):
 
     # Get the primer value and sequence from nums and seqs
     out = {}
-
+    print(nums)
+    print(seqs)
     with open("alignment_blast_in.fasta", "w") as f:
         for primer in nums:
             
@@ -79,16 +82,40 @@ def parse_primer3_output(primer3_output):
             else:
                 #key = "reverse_{}".format(nums[primer])
                 key = "{}_reverse".format(nums[primer])
-            out[key] = seqs[primer]
-            f.write(">{}\n{}\n".format(key, seqs[primer]))
+
+            if key not in out:
+                out[key] = seqs[primer]
+                f.write(">{}\n{}\n".format(key, seqs[primer]))
 
     return out
 
 
 
 
-def get_all_alignments(target_db, nontarget_db):
-    pass
+def get_all_alignments(directory, target_list):
+
+    targets = set()
+    with open(target_list, "rU") as f:
+        for line in f:
+            targets.add(line.replace("\n", ""))
+
+
+    subprocess.run("touch target_database.seqs", shell=True)
+    subprocess.run("touch non_target_database.seqs", shell=True)
+
+    for file in glob.glob(os.path.join(directory, "*.fasta")):
+        name = file.replace(".fasta", "")
+        if name in targets:
+            subprocess.run("cat {} >> target_database.seqs".format(name), shell=True)
+        else:
+            subprocess.run("cat {} >> non_target_database.seqs".format(name), shell=True)
+            
+    subprocess.run("makeblastdb -in target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
+    subprocess.run("makeblastdb -in non_target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
+
+    subprocess.run("blastn -task blastn -query alignment_blast_in.fasta -db target_database.seqs -num_alignments 2000 -outfmt 6 -out target_blast.out -evalue 10", shell=True)
+    subprocess.run("blastn -task blastn -query alignment_blast_in.fasta -db non_target_database.seqs -num_alignments 2000 -outfmt 6 -out non_target_blast.out -evalue 10", shell=True)
+
 
 
 
@@ -97,7 +124,7 @@ if __name__ == "__main__":
 
     args = sys.argv
 
-    print(get_seqs(args[1], args[2], args[3], args[4]))
+    print(get_seqs(args[1], args[2], args[3], args[4], args[5], args[6]))
 
     
 
