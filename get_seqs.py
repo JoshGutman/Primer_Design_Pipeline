@@ -108,12 +108,12 @@ def get_all_alignments(directory, target_list):
                 t.write(">{}\n".format(name))
                 with open(file) as f:
                     for record in SeqIO.parse(f, "fasta"):
-                        t.write(record.seq + "\n")
+                        t.write(str(record.seq) + "\n")
             else:
                 nt.write(">{}\n".format(name))
                 with open(file) as f:
                     for record in SeqIO.parse(f, "fasta"):
-                        nt.write(record.seq + "\n")
+                        nt.write(str(record.seq) + "\n")
             
     subprocess.run("makeblastdb -in target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
     subprocess.run("makeblastdb -in non_target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
