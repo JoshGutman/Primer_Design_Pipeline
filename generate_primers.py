@@ -6,7 +6,7 @@ def generate_primers(sequences, genomes):
 
     for name in sequences:
 
-        orientation, value = name.split("_")
+        value, orientation = name.split("_")
         value = int(value)
         length = len(sequences[name])
 
