@@ -106,9 +106,9 @@ def get_all_alignments(directory, target_list):
     for file in glob.glob(os.path.join(directory, "*.fasta")):
         name = file.replace(".fasta", "")
         if name in targets:
-            subprocess.run("cat {} >> target_database.seqs".format(name), shell=True)
+            subprocess.run("cat {} >> target_database.seqs".format(file), shell=True)
         else:
-            subprocess.run("cat {} >> non_target_database.seqs".format(name), shell=True)
+            subprocess.run("cat {} >> non_target_database.seqs".format(file), shell=True)
             
     subprocess.run("makeblastdb -in target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
     subprocess.run("makeblastdb -in non_target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
