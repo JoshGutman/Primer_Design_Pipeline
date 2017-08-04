@@ -80,7 +80,7 @@ def parse_primer3_output(primer3_output):
                 #key = "reverse_{}".format(nums[primer])
                 key = "{}_reverse".format(nums[primer])
             out[key] = seqs[primer]
-            f.write(">{}\n{}\n".format(key, seqs[primer])
+            f.write(">{}\n{}\n".format(key, seqs[primer]))
 
     return out
 
