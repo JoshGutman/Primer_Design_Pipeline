@@ -2,6 +2,11 @@ import subprocess
 import os
 from Bio import SeqIO
 
+'''
+ecoli-TARGET_LIST.TXT
+
+'''
+
 # Driver
 # Takes in primer3_template.txt, target.fasta, lower bound, upper bound
 def get_seqs(config_file, gene, lower, upper):
@@ -64,18 +69,26 @@ def parse_primer3_output(primer3_output):
 
     # Get the primer value and sequence from nums and seqs
     out = {}
-    for primer in nums:
-        
-        if "LEFT" in primer:
-            key = "forward_{}".format(nums[primer])
-        else:
-            key = "reverse_{}".format(nums[primer])
+
+    with open("alignment_blast_in.fasta", "w") as f:
+        for primer in nums:
             
-        out[key] = seqs[primer]
+            if "LEFT" in primer:
+                #key = "forward_{}".format(nums[primer])
+                key = "{}_forward".format(nums[primer])
+            else:
+                #key = "reverse_{}".format(nums[primer])
+                key = "{}_reverse".format(nums[primer])
+            out[key] = seqs[primer]
+            f.write(">{}\n{}\n".format(key, seqs[primer])
 
     return out
 
 
+
+
+def get_all_alignments(target_db, nontarget_db):
+    pass
 
 
 
