@@ -71,8 +71,7 @@ def parse_primer3_output(primer3_output):
 
     # Get the primer value and sequence from nums and seqs
     out = {}
-    print(nums)
-    print(seqs)
+
     with open("alignment_blast_in.fasta", "w") as f:
         for primer in nums:
             
@@ -99,16 +98,22 @@ def get_all_alignments(directory, target_list):
         for line in f:
             targets.add(line.replace("\n", ""))
 
+    print(targets)
 
-    subprocess.run("touch target_database.seqs", shell=True)
-    subprocess.run("touch non_target_database.seqs", shell=True)
+    with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt:
+        for file in glob.glob(os.path.join(directory, "*.fasta")):
+            name = file.replace(".fasta", "")
 
-    for file in glob.glob(os.path.join(directory, "*.fasta")):
-        name = file.replace(".fasta", "")
-        if name in targets:
-            subprocess.run("cat {} >> target_database.seqs".format(file), shell=True)
-        else:
-            subprocess.run("cat {} >> non_target_database.seqs".format(file), shell=True)
+            if name in targets:
+                t.write(">{}\n".format(name))
+                with open(file) as f:
+                    for record in SeqIO.parse(f, "fasta"):
+                        t.write(record.seq + "\n")
+            else:
+                nt.write(">{}\n".format(name))
+                with open(file) as f:
+                    for record in SeqIO.parse(f, "fasta"):
+                        nt.write(record.seq + "\n")
             
     subprocess.run("makeblastdb -in target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
     subprocess.run("makeblastdb -in non_target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
