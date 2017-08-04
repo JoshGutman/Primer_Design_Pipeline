@@ -98,11 +98,10 @@ def get_all_alignments(directory, target_list):
         for line in f:
             targets.add(line.replace("\n", ""))
 
-    print(targets)
 
     with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt:
         for file in glob.glob(os.path.join(directory, "*.fasta")):
-            name = file.replace(".fasta", "")
+            name = os.path.basename(file).replace(".fasta", "")
 
             if name in targets:
                 t.write(">{}\n".format(name))
