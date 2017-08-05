@@ -1,5 +1,9 @@
+import subprocess
 import argparse
+import glob
 import os
+from Bio import SeqIO
+
 
 from get_seqs import get_seqs
 from get_genomes import get_genomes
