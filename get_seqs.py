@@ -3,10 +3,7 @@ import os
 import glob
 from Bio import SeqIO
 
-'''
-ecoli-TARGET_LIST.TXT
 
-'''
 
 # Driver
 # Takes in primer3_template.txt, target.fasta, lower bound, upper bound
@@ -15,7 +12,15 @@ def get_seqs(config_file, gene, directory, target_list, lower, upper):
     modify_input_file(config_file, gene, lower, upper)
     subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
     out = parse_primer3_output("primer3_out")
+    
     run_blast(directory, target_list)
+    mishits, hits = parse_blast_output()
+
+    print("\nTarget mis-hits:")
+    print(mishits)
+    print("\nNon-target hits:")
+    print(hits)
+    
     os.remove("primer3_out")
     os.remove("config_modified.txt")
     return out
@@ -133,18 +138,45 @@ def run_blast(directory, target_list):
 
 
 def parse_blast_output():
-    #TODO
-    # Is the Blast report correct? Probably
+    
+    good_hits = {}
+    target_mishits = {} # Key = seq name, Value = list of tuples: (mishit ID, mishit length)
 
-    # target_blast.out:
-    # Look in Blast report for lines where fields[0] and fields[1] are repeated
-    # In the repeated line, save fields[0], fields[1], fields[2], fields[3]
+    with open("target_blast.out", "rU") as f:
+        for line in f:
+            fields = line.split()
+            
+            if fields[0] in good_hits:
+                
+                if fields[1] in good_hits[fields[0]]:
 
-    # non_target_blast.out
-    # Look in Blast report for lines where float(fields[2]) > 95
-    # In those lines, save fields[0], fields[1], fields[2], fields[3]
+                    if fields[0] in target_mishits:
+                        target_mishits[fields[0]].append((fields[2], fields[3]))
+                    else:
+                        target_mishits[fields[0]] = [(fields[2], fields[3])]
 
-    pass
+                else:
+                    good_hits[fields[0]].add(fields[1]))
+
+            else:
+                good_hits[fields[0]] = set()
+
+
+
+    non_target_hits = {}    # Key = seq name, Value = tuple: (hit ID, hit length)
+    with open("non_target_blast.out", "rU") as f:
+        for line in f:
+            fields = line.split()
+
+            if fields[0] in non_target_hits:
+                non_target_hits[fields[0]].append((fields[2], fields[3]))
+
+            else:
+                non_target_hits[fields[0]] = [(fields[2], fields[3])]
+                
+            
+    return (target_mishits, non_target_hits)
+
 
 
 if __name__ == "__main__":
