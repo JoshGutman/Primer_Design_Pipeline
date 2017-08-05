@@ -31,9 +31,11 @@ def get_genomes(target, directory):
     for file in glob.glob("tmp_muscle_*"):
         os.remove(file)
 
+    '''
         # Remove blast database files
     for file in glob.glob("combined.seqs*"):
         os.remove(file)
+    '''
 
         # Remove target fasta variants (leave original target.fasta)
     target_name = os.path.splitext(target)[0]
