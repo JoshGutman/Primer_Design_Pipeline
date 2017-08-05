@@ -16,7 +16,7 @@ def get_genomes(target, directory):
 
     directory = os.path.abspath(directory)
 
-    combine_seqs(directory)
+    #combine_seqs(directory)
         
     run_blast(target, "blastn")
     parse_blast_output(target)
@@ -45,26 +45,6 @@ def get_genomes(target, directory):
 
     return out
     
-    
-    
-
-# Create fasta used to make blast database
-def combine_seqs(directory):
-
-    if os.path.isfile("combined.seqs"):
-        return
-    
-    with open("combined.seqs", "w") as f:
-
-        for file in glob.glob(os.path.join(directory, "*.fasta")):
-            f.write(">" + os.path.basename(file).replace(".fasta", "") + "\n")
-
-            # BioPython dependancy
-            with open(file) as temp_file:
-                for record in SeqIO.parse(temp_file, "fasta"):
-                    f.write(str(record.seq) + "\n")
-
-    subprocess.run("makeblastdb -in combined.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
 
 
 
