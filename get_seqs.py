@@ -3,6 +3,11 @@ import os
 import glob
 from Bio import SeqIO
 
+#TODO
+# Return mishits and hits
+# > Possibly write them to a file
+# Use the hits mishits and hits when selecting final primers in generate_primers.py
+# Delete old files
 
 
 # Driver
@@ -103,24 +108,6 @@ def run_blast(directory, target_list):
         for line in f:
             targets.add(line.replace("\n", ""))
 
-    '''
-    with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt:
-        for file in glob.glob(os.path.join(directory, "*.fasta")):
-            name = os.path.basename(file).replace(".fasta", "")
-
-            if name in targets:
-                t.write(">{}\n".format(name))
-                with open(file) as f:
-                    for record in SeqIO.parse(f, "fasta"):
-                        t.write(str(record.seq) + "\n")
-            else:
-                nt.write(">{}\n".format(name))
-                with open(file) as f:
-                    for record in SeqIO.parse(f, "fasta"):
-                        nt.write(str(record.seq) + "\n")
-
-    '''
-
     with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt, open("combined.seqs") as f:
         for record in SeqIO.parse(f, "fasta"):
             if str(record.id) in targets:
@@ -139,25 +126,30 @@ def run_blast(directory, target_list):
 
 def parse_blast_output():
     
-    good_hits = {}
+    good_hits = {}  # Key = seq name, Value = set of hit genomes
     target_mishits = {} # Key = seq name, Value = list of tuples: (mishit ID, mishit length)
 
     with open("target_blast.out", "rU") as f:
         for line in f:
             fields = line.split()
-            
+
+            # If sequence is in good hits, look for duplicates
             if fields[0] in good_hits:
-                
+
+                # If sequence has hit the same genome in more than one spot                
                 if fields[1] in good_hits[fields[0]]:
 
+                    # Append the mis-hit ID and length to target_mishits
                     if fields[0] in target_mishits:
                         target_mishits[fields[0]].append((fields[2], fields[3]))
                     else:
                         target_mishits[fields[0]] = [(fields[2], fields[3])]
 
+                # If sequence has hit a genome for the first time, add it to good_hits
                 else:
                     good_hits[fields[0]].add(fields[1])
 
+            # If sequence not is not in good_hits, set the initial value to an empty set
             else:
                 good_hits[fields[0]] = set()
 
