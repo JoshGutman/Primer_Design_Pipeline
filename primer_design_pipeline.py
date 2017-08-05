@@ -13,6 +13,7 @@ from generate_primers import generate_primers
 def primer_design_pipeline(target, directory, config_file, target_list, lower, upper):
 
     combine_seqs(directory)
+    
     seqs = get_seqs(config_file, target, directory, target_list, lower, upper)
     genomes = get_genomes(target, directory)
     primers = generate_primers(seqs, genomes)
@@ -26,8 +27,10 @@ def primer_design_pipeline(target, directory, config_file, target_list, lower, u
 # Create fasta used to make blast database
 def combine_seqs(directory):
 
+    '''
     if os.path.isfile("combined.seqs"):
         return
+    '''
     
     with open("combined.seqs", "w") as f:
 
