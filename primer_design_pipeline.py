@@ -7,11 +7,34 @@ from generate_primers import generate_primers
 
 def primer_design_pipeline(target, directory, config_file, target_list, lower, upper):
 
+    combine_seqs(directory)
     seqs = get_seqs(config_file, target, directory, target_list, lower, upper)
     genomes = get_genomes(target, directory)
     primers = generate_primers(seqs, genomes)
 
     print(primers)
+
+
+
+
+
+# Create fasta used to make blast database
+def combine_seqs(directory):
+
+    if os.path.isfile("combined.seqs"):
+        return
+    
+    with open("combined.seqs", "w") as f:
+
+        for file in glob.glob(os.path.join(directory, "*.fasta")):
+            f.write(">" + os.path.basename(file).replace(".fasta", "") + "\n")
+
+            # BioPython dependancy
+            with open(file) as temp_file:
+                for record in SeqIO.parse(temp_file, "fasta"):
+                    f.write(str(record.seq) + "\n")
+
+    subprocess.run("makeblastdb -in combined.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
 
 
 
