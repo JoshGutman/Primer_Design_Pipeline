@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from get_seqs import get_seqs
 from get_genomes import get_genomes
