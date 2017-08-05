@@ -15,7 +15,7 @@ def get_seqs(config_file, gene, directory, target_list, lower, upper):
     modify_input_file(config_file, gene, lower, upper)
     subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
     out = parse_primer3_output("primer3_out")
-    get_all_alignments(directory, target_list)
+    run_blast(directory, target_list)
     os.remove("primer3_out")
     os.remove("config_modified.txt")
     return out
@@ -91,14 +91,14 @@ def parse_primer3_output(primer3_output):
 
 
 
-def get_all_alignments(directory, target_list):
+def run_blast(directory, target_list):
 
     targets = set()
     with open(target_list, "rU") as f:
         for line in f:
             targets.add(line.replace("\n", ""))
 
-
+    '''
     with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt:
         for file in glob.glob(os.path.join(directory, "*.fasta")):
             name = os.path.basename(file).replace(".fasta", "")
@@ -113,7 +113,17 @@ def get_all_alignments(directory, target_list):
                 with open(file) as f:
                     for record in SeqIO.parse(f, "fasta"):
                         nt.write(str(record.seq) + "\n")
-            
+
+    '''
+
+    with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt, open("combined.seqs") as f:
+        for record in SeqIO.parse(f, "fasta"):
+            if str(record.id) in targets:
+                t.write(">{}\n{}\n".format(str(record.id), str(record.seq)))
+            else:
+                nt.write(">{}\n{}\n".format(str(record.id), str(record.seq)))
+
+    
     subprocess.run("makeblastdb -in target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
     subprocess.run("makeblastdb -in non_target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
 
@@ -121,6 +131,20 @@ def get_all_alignments(directory, target_list):
     subprocess.run("blastn -task blastn -query alignment_blast_in.fasta -db non_target_database.seqs -num_alignments 2000 -outfmt 6 -out non_target_blast.out -evalue 10", shell=True)
 
 
+
+def parse_blast_output():
+    #TODO
+    # Is the Blast report correct? Probably
+
+    # target_blast.out:
+    # Look in Blast report for lines where fields[0] and fields[1] are repeated
+    # In the repeated line, save fields[0], fields[1], fields[2], fields[3]
+
+    # non_target_blast.out
+    # Look in Blast report for lines where float(fields[2]) > 95
+    # In those lines, save fields[0], fields[1], fields[2], fields[3]
+
+    pass
 
 
 if __name__ == "__main__":
