@@ -156,7 +156,7 @@ def parse_blast_output():
                         target_mishits[fields[0]] = [(fields[2], fields[3])]
 
                 else:
-                    good_hits[fields[0]].add(fields[1]))
+                    good_hits[fields[0]].add(fields[1])
 
             else:
                 good_hits[fields[0]] = set()
