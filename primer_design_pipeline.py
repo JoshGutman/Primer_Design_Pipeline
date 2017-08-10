@@ -105,7 +105,7 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
         else:
             for forward in combos:
 
-                for data in combos[combo]:
+                for data in combos[forward]:
                     reverse = data[0]
                     
                     vals = []
