@@ -12,23 +12,21 @@ from Bio import SeqIO
 
 # Driver
 # Takes in primer3_template.txt, target.fasta, lower bound, upper bound
+# Returns (seqs, target mis-hits, non-target hits)
+#         > All dicts with primer name as key, mis-hits and hits have values of lists of tuples with (ID, length)
 def get_seqs(config_file, gene, directory, target_list, lower, upper):
 
     modify_input_file(config_file, gene, lower, upper)
     subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
-    out = parse_primer3_output("primer3_out")
+    primers = parse_primer3_output("primer3_out")
     
     run_blast(directory, target_list)
-    mishits, hits = parse_blast_output()
-
-    print("\nTarget mis-hits:")
-    print(mishits)
-    print("\nNon-target hits:")
-    print(hits)
+    mishits, hits = parse_blast_output(primers)
     
     os.remove("primer3_out")
     os.remove("config_modified.txt")
-    return out
+    
+    return (primers, mishits, hits)
 
 
 
@@ -124,10 +122,16 @@ def run_blast(directory, target_list):
 
 
 
-def parse_blast_output():
+def parse_blast_output(primers):
     
     good_hits = {}  # Key = seq name, Value = set of hit genomes
     target_mishits = {} # Key = seq name, Value = list of tuples: (mishit ID, mishit length)
+    non_target_hits = {}    # Key = seq name, Value = tuple: (hit ID, hit length)
+
+
+    for primer in primers:
+        target_mishits[primer] = []
+        non_target_hits[primer] = []
 
     with open("target_blast.out", "rU") as f:
         for line in f:
@@ -140,10 +144,14 @@ def parse_blast_output():
                 if fields[1] in good_hits[fields[0]]:
 
                     # Append the mis-hit ID and length to target_mishits
+                    '''
                     if fields[0] in target_mishits:
                         target_mishits[fields[0]].append((fields[2], fields[3]))
                     else:
                         target_mishits[fields[0]] = [(fields[2], fields[3])]
+
+                    '''
+                    target_mishits[fields[0]].append((fields[2], fields[3]))
 
                 # If sequence has hit a genome for the first time, add it to good_hits
                 else:
@@ -155,17 +163,20 @@ def parse_blast_output():
 
 
 
-    non_target_hits = {}    # Key = seq name, Value = tuple: (hit ID, hit length)
+
     with open("non_target_blast.out", "rU") as f:
         for line in f:
             fields = line.split()
 
+            '''
             if fields[0] in non_target_hits:
                 non_target_hits[fields[0]].append((fields[2], fields[3]))
 
             else:
                 non_target_hits[fields[0]] = [(fields[2], fields[3])]
-                
+            '''
+
+            non_target_hits[fields[0]].append((fields[2], fields[3]))
             
     return (target_mishits, non_target_hits)
 
