@@ -115,7 +115,7 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
                     vals.append(len(mis_hits[forward]) + len(mis_hits[reverse]))
                     vals.append(len(non_target_hits[forward]) + len(non_target_hits[reverse]))
                     vals.append(get_number_degens(primers[forward]))
-                    vals.append(get_number_degens(primers[reverse))
+                    vals.append(get_number_degens(primers[reverse]))
                     vals.append(primers[forward])
                     vals.append(primers[reverse])
 
