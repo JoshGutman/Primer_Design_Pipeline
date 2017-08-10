@@ -108,12 +108,12 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
                 vals = []
                 vals.append(combo)
                 vals.append(combos[combo][0])
-                vals.append(len(mis_hits[forward]) + len(mis_hits[reverse]))
-                vals.append(len(non_target_hits[forward]) + len(non_target_hits[reverse]))
-                vals.append(get_number_degens(primers[forward]))
-                vals.append(get_number_degens(primers[reverse]))
-                vals.append(primers[forward])
-                vals.append(primers[reverse])
+                vals.append(len(mis_hits[combo]) + len(mis_hits[combos[combo][0]]))
+                vals.append(len(non_target_hits[combo]) + len(non_target_hits[combos[combo][0]]))
+                vals.append(get_number_degens(primers[combo]))
+                vals.append(get_number_degens(primers[combos[combo][0]]))
+                vals.append(primers[combo])
+                vals.append(primers[combos[combo][0]])
 
                 outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(*vals))
         
