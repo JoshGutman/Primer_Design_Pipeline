@@ -83,6 +83,8 @@ def get_combos(primers, lower, upper):
 
 
     if len(out) != 0:
+        print(out)
+        print()
         return out
 
     else:
