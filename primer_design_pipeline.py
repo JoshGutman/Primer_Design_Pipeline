@@ -14,9 +14,12 @@ def primer_design_pipeline(target, directory, config_file, target_list, lower, u
 
     combine_seqs(directory)
     
-    seqs = get_seqs(config_file, target, directory, target_list, lower, upper)
+    seqs, mis_hits, non_target_hits = get_seqs(config_file, target, directory, target_list, lower, upper)
     genomes = get_genomes(target, directory)
     primers = generate_primers(seqs, genomes)
+
+    combos = get_combos(primers, lower, upper)
+    output_candidate_primers(combos, primers, mis_hits, non_target_hits)
 
     print(primers)
 
@@ -44,6 +47,88 @@ def combine_seqs(directory):
 
     subprocess.run("makeblastdb -in combined.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
 
+
+
+def get_combos(primers, lower, upper):
+
+    out = {}
+    all_combos = {}
+    all_combos["no matches"] = None
+    forwards = []
+    reverses = []
+
+    for primer in primers:
+        if "forward" in primer:
+            forwards.append(primer)
+            all_combos[primer] = []
+        else:
+            reverses.append(primer)
+
+    for f in forwards:
+        f_val = int(f.split("_")[0])
+        
+        for r in reverses:
+            r_val = int(r.split("_")[0])
+
+            combo_range = abs(f_val - r_val)
+
+            all_combos[f].append((r, combo_range))
+            
+            if lower <= combo_range <= upper:
+
+                if f in out:
+                    out[f].append((r, combo_range))
+                else:
+                    out[f] = [(r, combo_range)]
+
+
+    if len(out) != 0:
+        return out
+
+    else:
+        return all_combos
+
+
+
+
+
+def output_cadidate_primers(combos, primers, mis_hits, non_target_hits):
+
+    with open("candidate_primers.txt", "w") as outfile:
+        outfile.write("Forward name\tReverse name\tMis-hits sum\tNon-target hits sum\t# forward degens\t # reverse degens\tForward sequence\tReverse Sequence\n")
+
+        if "no_matches" in combos:
+            # No combos were found in the specified range
+            #TODO
+            pass
+
+        else:
+            for combo in combos:
+
+                vals = []
+                vals.append(combo)
+                vals.append(combos[combo][0])
+                vals.append(len(mis_hits[forward]) + len(mis_hits[reverse]))
+                vals.append(len(non_target_hits[forward]) + len(non_target_hits[reverse]))
+                vals.append(get_number_degens(primers[forward]))
+                vals.append(get_number_degens(primers[reverse]))
+                vals.append(primers[forward])
+                vals.append(primers[reverse])
+
+                outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(*vals))
+        
+
+
+
+
+def get_number_degens(sequence):
+
+    out = 0
+    for base in sequence.upper():
+        if base not in "ACGT":
+           out += 1 
+
+    return out
 
 
 if __name__ == "__main__":
