@@ -103,19 +103,23 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
             pass
 
         else:
-            for combo in combos:
+            for forward in combos:
 
-                vals = []
-                vals.append(combo)
-                vals.append(combos[combo][0])
-                vals.append(len(mis_hits[combo]) + len(mis_hits[combos[combo][0]]))
-                vals.append(len(non_target_hits[combo]) + len(non_target_hits[combos[combo][0]]))
-                vals.append(get_number_degens(primers[combo]))
-                vals.append(get_number_degens(primers[combos[combo][0]]))
-                vals.append(primers[combo])
-                vals.append(primers[combos[combo][0]])
+                for data in combos[combo]:
+                    reverse = data[0]
+                    
+                    vals = []
+                    
+                    vals.append(forward)
+                    vals.append(reverse)
+                    vals.append(len(mis_hits[forward]) + len(mis_hits[reverse]))
+                    vals.append(len(non_target_hits[forward]) + len(non_target_hits[reverse]))
+                    vals.append(get_number_degens(primers[forward]))
+                    vals.append(get_number_degens(primers[reverse))
+                    vals.append(primers[forward])
+                    vals.append(primers[reverse])
 
-                outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(*vals))
+                    outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(*vals))
         
 
 
