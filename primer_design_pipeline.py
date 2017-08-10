@@ -92,7 +92,7 @@ def get_combos(primers, lower, upper):
 
 
 
-def output_cadidate_primers(combos, primers, mis_hits, non_target_hits):
+def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
 
     with open("candidate_primers.txt", "w") as outfile:
         outfile.write("Forward name\tReverse name\tMis-hits sum\tNon-target hits sum\t# forward degens\t # reverse degens\tForward sequence\tReverse Sequence\n")
