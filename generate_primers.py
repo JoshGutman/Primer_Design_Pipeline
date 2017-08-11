@@ -3,7 +3,7 @@
 
 def generate_primers(sequences, genomes, ignore_percent):
 
-    if ignore > 1:
+    if ignore_percent > 1:
         ignore_percent /= 100
 
     # Key = sequence name
