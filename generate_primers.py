@@ -40,7 +40,10 @@ def generate_primers(sequences, genomes, ignore_percent):
 
         for i in range(length):
 
-            ignore = 0
+            snps = {"A": 0,
+                    "C": 0,
+                    "G": 0,
+                    "T": 0}
 
             for genome in genomes:
                 if orientation == "forward":
@@ -51,8 +54,10 @@ def generate_primers(sequences, genomes, ignore_percent):
                 if sequences[name][i] != base:
                     if base != "-":
                         if base not in degens[i]:
-                            ignore += 1
-                            if (ignore / len(genomes)) > (1 - ignore_percent):
+                            snps[base] += 1
+
+                            # Only consider degens if the base occurs in more than (100 - ignore_percent) of genomes
+                            if (snps[base] / len(genomes)) > (1 - ignore_percent):
                                 degens[i].append(base)
 
 
