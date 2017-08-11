@@ -4,10 +4,15 @@ import glob
 import os
 from Bio import SeqIO
 
-
 from get_seqs import get_seqs
 from get_genomes import get_genomes
 from generate_primers import generate_primers
+
+
+#TODO
+# Output all mis-hits and non-target hits to file
+# One file for each primer mis-hit and each primer non-target-hit
+# E.g. 244_reverse_mis_hits.txt, 244_reverse_non_target_hits.txt
 
 
 def primer_design_pipeline(target, directory, config_file, target_list, lower, upper, ignore):
@@ -97,7 +102,8 @@ def get_combos(primers, lower, upper):
 def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
 
     with open("candidate_primers.txt", "w") as outfile:
-        outfile.write("Forward name\tReverse name\tMis-hits sum\tNon-target hits sum\t# forward degens\t # reverse degens\tForward sequence\tReverse Sequence\n")
+        #outfile.write("Forward name\tReverse name\tMis-hits sum\tNon-target hits sum\t# forward degens\t # reverse degens\tForward sequence\tReverse Sequence\n")
+        outfile.write("Forward name\tReverse name\tMax mis-hit (ID, Length)\tMax non-target-hit (ID, length)\t# forward degens\t # reverse degens\tForward sequence\tReverse Sequence\n")
 
         if "no_matches" in combos:
             # No combos were found in the specified range
@@ -114,8 +120,10 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
                     
                     vals.append(forward)
                     vals.append(reverse)
-                    vals.append(len(mis_hits[forward]) + len(mis_hits[reverse]))
-                    vals.append(len(non_target_hits[forward]) + len(non_target_hits[reverse]))
+                    #vals.append(len(mis_hits[forward]) + len(mis_hits[reverse]))
+                    #vals.append(len(non_target_hits[forward]) + len(non_target_hits[reverse]))
+                    vals.append(mis_hits[0])
+                    vals.append(non_target_hits[0])
                     vals.append(get_number_degens(primers[forward]))
                     vals.append(get_number_degens(primers[reverse]))
                     vals.append(primers[forward])
@@ -146,7 +154,7 @@ if __name__ == "__main__":
     parser.add_argument("-g", "--genomes", help="[REQUIRED] Path to .txt file with target genomes", required=True)
     parser.add_argument("-l", "--lower", help="Lower bound of amplicon size", type=int, default=150)
     parser.add_argument("-u", "--upper", help="Upper bound of amplicon size", type=int, default=250)
-    parser.add_argument("-i", "--ignore", help="Threshold percentage to consider degens", type=int, default=90)
+    parser.add_argument("-i", "--ignore", help="Threshold percentage to consider degens", type=int, default=95)
 
     args = parser.parse_args()
 
