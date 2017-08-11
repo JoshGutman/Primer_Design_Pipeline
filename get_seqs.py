@@ -4,9 +4,9 @@ import glob
 from Bio import SeqIO
 
 #TODO
-# Return mishits and hits
+# Return mis_hits and hits
 # > Possibly write them to a file
-# Use the hits mishits and hits when selecting final primers in generate_primers.py
+# Use the hits mis_hits and hits when selecting final primers in generate_primers.py
 # Delete old files
 
 
@@ -21,12 +21,12 @@ def get_seqs(config_file, gene, directory, target_list, lower, upper):
     primers = parse_primer3_output("primer3_out")
     
     run_blast(directory, target_list)
-    mishits, hits = parse_blast_output(primers)
+    mis_hits, hits = parse_blast_output(primers)
     
     os.remove("primer3_out")
     os.remove("config_modified.txt")
     
-    return (primers, mishits, hits)
+    return (primers, mis_hits, hits)
 
 
 
@@ -125,13 +125,16 @@ def run_blast(directory, target_list):
 def parse_blast_output(primers):
     
     good_hits = {}  # Key = seq name, Value = set of hit genomes
-    target_mishits = {} # Key = seq name, Value = list of tuples: (mishit ID, mishit length)
+    target_mis_hits = {} # Key = seq name, Value = list of tuples: (mishit ID, mishit length)
     non_target_hits = {}    # Key = seq name, Value = tuple: (hit ID, hit length)
 
 
     for primer in primers:
-        target_mishits[primer] = []
+        target_mis_hits[primer] = []
         non_target_hits[primer] = []
+
+    max_mis_hit = (0, 0)
+    max_non_target_hit = (0, 0)
 
     with open("target_blast.out", "rU") as f:
         for line in f:
@@ -143,15 +146,12 @@ def parse_blast_output(primers):
                 # If sequence has hit the same genome in more than one spot                
                 if fields[1] in good_hits[fields[0]]:
 
-                    # Append the mis-hit ID and length to target_mishits
-                    '''
-                    if fields[0] in target_mishits:
-                        target_mishits[fields[0]].append((fields[2], fields[3]))
-                    else:
-                        target_mishits[fields[0]] = [(fields[2], fields[3])]
+                    # Append the mis-hit ID and length to target_mis_hits
+                    target_mis_hits[fields[0]].append((fields[2], fields[3]))
 
-                    '''
-                    target_mishits[fields[0]].append((fields[2], fields[3]))
+                    # Keep track of largest mis-hit with ID of at least 90 (subject to change?)
+                    if fields[3] > max_mis_hit[1] and fields[2] > 90:
+                        max_mis_hit = (fields[2], fields[3])
 
                 # If sequence has hit a genome for the first time, add it to good_hits
                 else:
@@ -168,17 +168,14 @@ def parse_blast_output(primers):
         for line in f:
             fields = line.split()
 
-            '''
-            if fields[0] in non_target_hits:
-                non_target_hits[fields[0]].append((fields[2], fields[3]))
-
-            else:
-                non_target_hits[fields[0]] = [(fields[2], fields[3])]
-            '''
-
             non_target_hits[fields[0]].append((fields[2], fields[3]))
+
+            # Keep track of largest non-target hit with ID of at least 90 (subject to change?)
+            if fields[3] > max_non_target_hit[1] and fields[2] > 90:
+                max_non_target_hit = (fields[2], fields[3])
+
             
-    return (target_mishits, non_target_hits)
+    return ((max_mis_hit, target_mis_hits), (max_non_target_hit, non_target_hits))
 
 
 
