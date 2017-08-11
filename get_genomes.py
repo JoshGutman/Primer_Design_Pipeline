@@ -5,7 +5,6 @@ from Bio import SeqIO
 
 """
 Will tblastn ever be run?
-Is Muscle needed? (Probably not)
 Is genome length of 500 a magic number? (Line 89)
 """
 
@@ -60,7 +59,7 @@ def run_blast(target, blast_type):
         subprocess.run('tblastn -query {} -db combined.seqs -out {}.blast.out -seg no -num_alignments 20000 -outfmt "7 std sseq"'.format(target, reduced_name), shell=True)
 
 
-
+'''
 # Get seqs outputted from blast
 def parse_blast_output(target):
 
@@ -74,7 +73,29 @@ def parse_blast_output(target):
                 if len(fields[12]) == 500:
                     outfile.write(">" + fields[1] + "\n")
                     outfile.write(fields[12] + "\n")
+'''
 
+def parse_blast_output(target):
+
+    data = []
+
+    with open("{}.blast.out".format(os.path.basename(target).replace(".fasta", "")), "rU") as infile:
+        for line in infile:
+            if line.startswith("#"):
+                continue
+            else:
+                fields = line.split()
+                data.append((fields[1], fields[12]))
+
+    data.sort(key=lambda tup: len(tup[1]), reverse=True)
+    largest = len(data[0][1])
+
+    with open("tmp_muscle_in", "w") as outfile:
+        for item in data:
+            if (len(item[1]) / largest) > .9:
+                outfile.write(">{}\n".format(item[0]))
+                outfile.write("{}\n".format(item[1]))
+        
 
 # Is muscle needed?
 def parse_muscle_output():
