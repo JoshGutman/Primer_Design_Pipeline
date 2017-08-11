@@ -10,13 +10,13 @@ from get_genomes import get_genomes
 from generate_primers import generate_primers
 
 
-def primer_design_pipeline(target, directory, config_file, target_list, lower, upper):
+def primer_design_pipeline(target, directory, config_file, target_list, lower, upper, ignore):
 
     combine_seqs(directory)
     
     seqs, mis_hits, non_target_hits = get_seqs(config_file, target, directory, target_list, lower, upper)
     genomes = get_genomes(target, directory)
-    primers = generate_primers(seqs, genomes)
+    primers = generate_primers(seqs, genomes, ignore)
 
     combos = get_combos(primers, lower, upper)
     output_candidate_primers(combos, primers, mis_hits, non_target_hits)
@@ -146,7 +146,8 @@ if __name__ == "__main__":
     parser.add_argument("-g", "--genomes", help="[REQUIRED] Path to .txt file with target genomes", required=True)
     parser.add_argument("-l", "--lower", help="Lower bound of amplicon size", type=int, default=150)
     parser.add_argument("-u", "--upper", help="Upper bound of amplicon size", type=int, default=250)
+    parser.add_argument("-i", "--ignore", help="Threshold percentage to consider degens", type=int, default=90)
 
     args = parser.parse_args()
 
-    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.lower, args.upper)
+    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.lower, args.upper, args.ignore)

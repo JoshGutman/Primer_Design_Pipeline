@@ -1,4 +1,10 @@
-def generate_primers(sequences, genomes):
+# Should ignore_percent be 90% or 10% if you want to ignore 10% of SNPs before considering degens
+# Right now it's the former
+
+def generate_primers(sequences, genomes, ignore_percent):
+
+    if ignore > 1:
+        ignore_percent /= 100
 
     # Key = sequence name
     # Val = Primer with amiguity codes
@@ -17,7 +23,7 @@ def generate_primers(sequences, genomes):
         degens = [[sequences[name][i]] for i in range(length)]
         
         
-
+        '''
         for genome in genomes:
             
             for i in range(length):
@@ -30,6 +36,24 @@ def generate_primers(sequences, genomes):
                     if base != "-":
                         if base not in degens[i]:
                             degens[i].append(base)
+          '''
+
+        for i in range(length):
+
+            ignore = 0
+
+            for genome in genomes:
+                if orientation == "forward":
+                    base = genome[value + i - 1]
+                elif orientation == "reverse":
+                    base = genome[value - length + i]
+                
+                if sequences[name][i] != base:
+                    if base != "-":
+                        if base not in degens[i]:
+                            ignore += 1
+                            if (ignore / len(genomes)) > (1 - ignore_percent):
+                                degens[i].append(base)
 
 
         
