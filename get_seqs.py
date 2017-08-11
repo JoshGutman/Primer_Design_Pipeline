@@ -150,8 +150,8 @@ def parse_blast_output(primers):
                     target_mis_hits[fields[0]].append((fields[2], fields[3]))
 
                     # Keep track of largest mis-hit with ID of at least 90 (subject to change?)
-                    if int(fields[3]) > max_mis_hit[1] and float(fields[2]) > 90:
-                        max_mis_hit = (fields[2], fields[3])
+                    if int(fields[3]) > int(max_mis_hit[1]) and float(fields[2]) > 90:
+                        max_mis_hit = (float(fields[2]), int(fields[3]))
 
                 # If sequence has hit a genome for the first time, add it to good_hits
                 else:
@@ -171,8 +171,8 @@ def parse_blast_output(primers):
             non_target_hits[fields[0]].append((fields[2], fields[3]))
 
             # Keep track of largest non-target hit with ID of at least 90 (subject to change?)
-            if int(fields[3]) > max_non_target_hit[1] and float(fields[2]) > 90:
-                max_non_target_hit = (fields[2], fields[3])
+            if int(fields[3]) > int(max_non_target_hit[1]) and float(fields[2]) > 90:
+                max_non_target_hit = (float(fields[2]), int(fields[3]))
 
             
     return ((max_mis_hit, target_mis_hits), (max_non_target_hit, non_target_hits))
