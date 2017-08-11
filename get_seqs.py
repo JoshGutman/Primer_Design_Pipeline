@@ -126,15 +126,21 @@ def parse_blast_output(primers):
     
     good_hits = {}  # Key = seq name, Value = set of hit genomes
     target_mis_hits = {} # Key = seq name, Value = list of tuples: (mishit ID, mishit length)
-    non_target_hits = {}    # Key = seq name, Value = tuple: (hit ID, hit length)
-
+    non_target_hits = {} # Key = seq name, Value = tuple: (hit ID, hit length)
+    max_mis_hits = {}
+    max_non_target_hits = {}
 
     for primer in primers:
         target_mis_hits[primer] = []
         non_target_hits[primer] = []
 
-    max_mis_hit = (0, 0)
-    max_non_target_hit = (0, 0)
+        max_mis_hits[primer] = (0, 0)
+        max_non_target_hits[primer] = (0, 0)
+
+    #max_mis_hits = (0, 0)
+    #max_non_target_hit = (0, 0)
+
+
 
     with open("target_blast.out", "rU") as f:
         for line in f:
@@ -150,8 +156,8 @@ def parse_blast_output(primers):
                     target_mis_hits[fields[0]].append((fields[2], fields[3]))
 
                     # Keep track of largest mis-hit with ID of at least 90 (subject to change?)
-                    if int(fields[3]) > int(max_mis_hit[1]) and float(fields[2]) > 90:
-                        max_mis_hit = (float(fields[2]), int(fields[3]))
+                    if int(fields[3]) > int(max_mis_hits[fields[0]][1]) and float(fields[2]) > 90:
+                        max_mis_hits[fields[0]] = (float(fields[2]), int(fields[3]))
 
                 # If sequence has hit a genome for the first time, add it to good_hits
                 else:
@@ -171,11 +177,11 @@ def parse_blast_output(primers):
             non_target_hits[fields[0]].append((fields[2], fields[3]))
 
             # Keep track of largest non-target hit with ID of at least 90 (subject to change?)
-            if int(fields[3]) > int(max_non_target_hit[1]) and float(fields[2]) > 90:
-                max_non_target_hit = (float(fields[2]), int(fields[3]))
+            if int(fields[3]) > int(max_non_target_hits[fields[0]][1]) and float(fields[2]) > 90:
+                max_non_target_hits[fields[0]] = (float(fields[2]), int(fields[3]))
 
             
-    return ((max_mis_hit, target_mis_hits), (max_non_target_hit, non_target_hits))
+    return ((max_mis_hits, target_mis_hits), (max_non_target_hits, non_target_hits))
 
 
 
