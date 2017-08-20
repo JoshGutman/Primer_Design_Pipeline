@@ -1,8 +1,18 @@
 import math
 
-def get_temp(primer, primer_conc, na_conc, mg_conc):
 
-    enthalpy, entropy = get_h_s(primer, primer_conc, na_conc, mg_conc)
+# Driver
+def get_tm(primer, primer_conc, na_conc, mg_conc):
+    
+    enthalpy, entropy = get_dH_dS(primer, primer_conc, na_conc, mg_conc)
+    uncorrected_tm = get_uncorrected_tm(enthalpy, entropy, primer_conc)
+    tm = monovalent_correction(primer, na_conc, uncorrected_tm)
+
+    return tm
+
+
+
+def get_uncorrected_tm(enthalpy, entropy, primer_conc):
 
     term = 1.9865 * math.log(primer_conc/1000000.0)
 
@@ -10,7 +20,7 @@ def get_temp(primer, primer_conc, na_conc, mg_conc):
     
 
 
-def get_h_s(primer, primer_conc, na_conc, mg_conc):
+def get_dH_dS(primer, primer_conc, na_conc, mg_conc):
 
 
     enthalpy = 0
@@ -55,6 +65,8 @@ def get_h_s(primer, primer_conc, na_conc, mg_conc):
     return enthalpy, entropy
 
 
+
+
 def get_gc_content(primer):
     return (primer.count("G") + primer.count("C")) / len(primer)
                     
@@ -77,8 +89,4 @@ def monovalent_correction(primer, na_conc, temp):
 
 
 if __name__ == "__main__":
-    y = get_temp("CTCTATCTAGCTCTCT", .25, 50, 0)
-    x = monovalent_correction("CTCTATCTAGCTCTCT", 50, y)
-
-    print(y)
-    print(x)
+    print(get_tm("CTCTATCTAGCTCTCT", .25, 50, 0))
