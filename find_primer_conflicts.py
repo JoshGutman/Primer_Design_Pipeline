@@ -46,7 +46,7 @@ def parse_blast_output(output):
             # What is fields[5]?
             # fields[3] = length, fields[0] = primer #1, fields[1] = primer #2
             if int(fields[3]) <= 10 and int(fields[5]) == 0:
-                if (fields[0], fields[1]) not in duplicates and (fields[1], fields[0]):
+                if (fields[0], fields[1]) not in duplicates and (fields[1], fields[0]) not in duplicates:
                     conflicts[int(fields[3])].append([fields[0], fields[1]])
                     duplicates.add((fields[0], fields[1]))
                     
