@@ -52,15 +52,17 @@ def parse_blast_output(output):
 
 def output_conflicts(conflicts):
 
-    '''
+
     with open("primer_conflicts.txt", "w") as out:
         for length in conflicts:
             if len(conflicts[length]) > 0:
                 for i in range(10, length-1, -1):
-                    out.write("Problematic primers with an alignment length of {}\n".format(length))
-                    out.write("{}\t{}\n\n".format(conflicts[i][0], conflicts[i][1]))
-    '''
-    pass
+                    if len(conflicts[i]) > 0:
+                        for data in conflicts[i]:
+                            out.write("Problematic primers with an alignment length of {}\n".format(length))
+                            out.write("{}\t{}\n\n".format(data[0], data[1]))
+
+    
 
 
 def blast_all_primers(primer_fasta, combined_seqs):
