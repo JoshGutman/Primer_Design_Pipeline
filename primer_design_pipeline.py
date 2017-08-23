@@ -187,8 +187,8 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target)
                     outfile.write("{} - {}\n".format(forward, reverse))
                     outfile.write("-------------------------------------------------------\n")
 
-                    forward_vals = [forward, mis_hits[forward], non_target_hits[forward], get_number_degens(primers[forward]), primers[forward], "tm_placeholder"]
-                    reverse_vals = [reverse, mis_hits[reverse], non_target_hits[reverse], get_number_degens(primers[reverse]), primers[reverse], "tm_placeholder"]
+                    forward_vals = [forward, mis_hits[0][forward], non_target_hits[0][forward], get_number_degens(primers[forward]), primers[forward], "tm_placeholder"]
+                    reverse_vals = [reverse, mis_hits[0][reverse], non_target_hits[0][reverse], get_number_degens(primers[reverse]), primers[reverse], "tm_placeholder"]
                     
                     # Name, mis-hit, non-target hit, degens, sequence, tm
                     outfile.write("Name\tMax mis-hit\tMax non-target hit\t# degens\tsequence\tTm\n")
