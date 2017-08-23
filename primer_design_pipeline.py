@@ -88,7 +88,7 @@ def combine_seqs(directory):
 def get_combos(primers, lower, upper):
 
     # Key = forward seq
-    # Value = list of (reverse seq, range)'s, where key and reverse seq are combos
+    # Value = list of [reverse seq, range]'s, where key and reverse seq are combos
     out = {}
 
     all_combos = {}
@@ -111,14 +111,14 @@ def get_combos(primers, lower, upper):
 
             combo_range = abs(f_val - r_val)
 
-            all_combos[f].append((r, combo_range))
+            all_combos[f].append([r, combo_range])
             
             if lower <= combo_range <= upper:
 
                 if f in out:
-                    out[f].append((r, combo_range))
+                    out[f].append([r, combo_range])
                 else:
-                    out[f] = [(r, combo_range)]
+                    out[f] = [[r, combo_range]]
 
 
     if len(out) != 0:
