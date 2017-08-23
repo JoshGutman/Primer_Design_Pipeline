@@ -118,4 +118,4 @@ def divalent_correction(primer, na_conc, mg_conc, temp, ratio):
 
 
 if __name__ == "__main__":
-    print(get_tm("CTCTATCTAGCTCTCT", .25, 50, 144))
+    print(get_tm("CTCTATCTAGCTCTCT", .25, 50, 0))
