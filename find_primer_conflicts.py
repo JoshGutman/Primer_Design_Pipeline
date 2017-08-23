@@ -29,11 +29,14 @@ def parse_blast_output(output):
     # This needs to be accounted for in whatever script calls this one.
     # E.g. conflicts[9] should contain both the values of conflicts[9] and of conflicts[10].
     # conflicts[8] should contain conflicts[8], conflicts[9], and conflicts[10].  Etc. etc.
-    
 
     # If there are no conflicts at a certain length, conflicts[length] == []
     for i in range(1, 11):
         conflicts[i] = []
+
+
+    duplicates = set()
+    
 
     with open(output, "rU") as f:
 
@@ -43,9 +46,11 @@ def parse_blast_output(output):
             # What is fields[5]?
             # fields[3] = length, fields[0] = primer #1, fields[1] = primer #2
             if int(fields[3]) <= 10 and int(fields[5]) == 0:
-                conflicts[int(fields[3])].append([fields[0], fields[1]])
+                if (fields[0], fields[1]) not in duplicates and (fields[1], fields[0]):
+                    conflicts[int(fields[3])].append([fields[0], fields[1]])
+                    duplicates.add((fields[0], fields[1]))
+                    
 
-    print(conflicts)
     return conflicts
 
 
@@ -56,11 +61,12 @@ def output_conflicts(conflicts):
     with open("primer_conflicts.txt", "w") as out:
         for length in conflicts:
             if len(conflicts[length]) > 0:
+                out.write("Problematic primers with an alignment length of {}:\n".format(length))
                 for i in range(10, length-1, -1):
                     if len(conflicts[i]) > 0:
                         for data in conflicts[i]:
-                            out.write("Problematic primers with an alignment length of {}\n".format(length))
-                            out.write("{}\t{}\n\n".format(data[0], data[1]))
+                            out.write("{}\t{}\n".format(data[0], data[1]))
+                out.write("\n\n")
 
     
 
