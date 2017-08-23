@@ -7,6 +7,7 @@ from Bio import SeqIO
 from get_seqs import get_seqs
 from get_genomes import get_genomes
 from generate_primers import generate_primers
+from find_primer_conflicts import find_primer_conflicts, blast_all_primers
 
 
 #TODO
@@ -15,7 +16,8 @@ from generate_primers import generate_primers
 # E.g. 244_reverse_mis_hits.txt, 244_reverse_non_target_hits.txt
 
 
-def primer_design_pipeline(target, directory, config_file, target_list, lower, upper, ignore):
+# Driver
+def primer_design_pipeline(target, directory, config_file, target_list, reference_fasta, lower, upper, ignore):
 
     combine_seqs(directory)
     
@@ -23,10 +25,39 @@ def primer_design_pipeline(target, directory, config_file, target_list, lower, u
     genomes = get_genomes(target, directory)
     primers = generate_primers(seqs, genomes, ignore)
 
+    blast_all_primers("alignment_blast_in.fasta", "combined.seqs")
+    find_primer_conflicts("alignment_blast_in.fasta")
+
     combos = get_combos(primers, lower, upper)
-    output_candidate_primers(combos, primers, mis_hits, non_target_hits)
+
+    get_all_amplicons(combos, reference_fasta)
+    
+    output_candidate_primers(combos, primers, mis_hits, non_target_hits, target)
 
     print(primers)
+
+
+
+def get_all_amplicons(combos, reference_fasta):
+
+    def _get_amplicon(forward_seq, reverse_seq, reference_fasta):
+
+        subprocess.run("./neben_linux_64 --primers {}:{} {} > amplicon".format(forward_seq, reverse_seq, reference_fasta), shell=True)
+        with open("amplicon", "rU") as f:
+            out = f.readline()
+
+        if out == "":
+            return "None"
+        else:
+            return out.split()[3]
+
+
+    for forward in combos:
+        for i in range(len(combos[forward])):
+            reverse = combos[forward][i][0]
+            combos[forward][i].append(_get_amplicon(forward, reverse, reference_fasta))
+
+
 
 
 
@@ -56,7 +87,10 @@ def combine_seqs(directory):
 
 def get_combos(primers, lower, upper):
 
+    # Key = forward seq
+    # Value = list of (reverse seq, range)'s, where key and reverse seq are combos
     out = {}
+
     all_combos = {}
     all_combos["no matches"] = None
     forwards = []
@@ -98,7 +132,7 @@ def get_combos(primers, lower, upper):
 
 
 
-
+'''
 def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
 
     with open("candidate_primers.txt", "w") as outfile:
@@ -130,8 +164,48 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
                     vals.append(primers[reverse])
 
                     outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(*vals))
-        
+'''     
 
+
+
+def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target):
+
+    with open("candidate_primers.txt", "w") as outfile:
+        #outfile.write("Forward name\tReverse name\tMax mis-hit (ID, Length)\tMax non-target-hit (ID, length)\t# forward degens\t # reverse degens\tForward sequence\tReverse Sequence\n")
+
+        if "no_matches" in combos:
+            # No combos were found in the specified range
+            #TODO
+            pass
+
+        else:
+            for forward in combos:
+                for data in combos[forward]:
+                    reverse = data[0]
+                    amplicon = data[2]
+
+                    outfile.write("{} - {}\n".format(forward, reverse))
+                    outfile.write("-------------------------------------------------------\n")
+
+                    forward_vals = [forward, mis_hits[forward], non_target_hits[forward], get_number_degens(primers[forward]), primers[forward], "tm_placeholder"]
+                    reverse_vals = [reverse, mis_hits[reverse], non_target_hits[reverse], get_number_degens(primers[reverse]), primers[reverse], "tm_placeholder"]
+                    
+                    # Name, mis-hit, non-target hit, degens, sequence, tm
+                    outfile.write("Name\tMax mis-hit\tMax non-target hit\t# degens\tsequence\tTm\n")
+                    outfile.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(*forward_vals))
+                    outfile.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(*reverse_vals))
+
+
+                    forward_order_vals = get_ordering_info(target, forward, primers[forward])
+                    reverse_order_vals = get_ordering_info(target, reverse, primers[reverse])
+
+                    outfile.write("\nOrdering information (csv):\n")
+                    # Target, Primer, Combined_Name, Primer (5'-3'), final_name, UT + Sequnece, To order
+                    outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(*forward_order_vals))
+                    outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(*reverse_order_vals))
+
+                    # Target, Amplicon
+                    outfile.write("{},{}\n\n\n".format(target, amplicon))
 
 
 
@@ -145,6 +219,26 @@ def get_number_degens(sequence):
     return out
 
 
+def get_ordering_info(target, name, sequence):
+
+    ut1 = "ACCCAACTGAATGGAGC"
+    ut2 = "ACGCACTTGACTTGTCTTC"
+
+    tails = {"forward": ("ut1", ut1),
+             "reverse": ("ut2", ut2)}
+
+    data = name.split("_")
+
+    primer_name = data[0] + data[1][0].upper()
+    combined_name = primer_name + "_" + target
+    final_name = combined_name + "_" + tails[data[1]][0]
+    sequence_tail = tails[data[1]][1] + sequence
+    to_order = final_name + "," + sequence_tail
+
+    return [target, primer_name, combined_name, sequence, final_name, sequence_tail, to_order]
+    
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(prog="primer_design_pipeline.py")
@@ -152,10 +246,12 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--directory", help="[REQUIRED] Path to reference fastas", required=True)
     parser.add_argument("-c", "--config", help="[REQUIRED] Path to primer3 config file", required=True)
     parser.add_argument("-g", "--genomes", help="[REQUIRED] Path to .txt file with target genomes", required=True)
+    parser.add_argument("-r", "--reference", help="[REQUIRED] Path to amplicon reference genome .fasta", required=True)
     parser.add_argument("-l", "--lower", help="Lower bound of amplicon size", type=int, default=150)
     parser.add_argument("-u", "--upper", help="Upper bound of amplicon size", type=int, default=250)
     parser.add_argument("-i", "--ignore", help="Threshold percentage to consider degens", type=int, default=95)
+    
 
     args = parser.parse_args()
 
-    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.lower, args.upper, args.ignore)
+    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore)
