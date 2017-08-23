@@ -185,27 +185,31 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target)
                     amplicon = data[2]
 
                     outfile.write("{} - {}\n".format(forward, reverse))
-                    outfile.write("-------------------------------------------------------\n")
+                    outfile.write("--------------------------------------------------------------------------------------\n")
 
                     forward_vals = [forward, mis_hits[0][forward], non_target_hits[0][forward], get_number_degens(primers[forward]), primers[forward], "tm_placeholder"]
                     reverse_vals = [reverse, mis_hits[0][reverse], non_target_hits[0][reverse], get_number_degens(primers[reverse]), primers[reverse], "tm_placeholder"]
                     
                     # Name, mis-hit, non-target hit, degens, sequence, tm
-                    outfile.write("Name\tMax mis-hit\tMax non-target hit\t# degens\tsequence\tTm\n")
-                    outfile.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(*forward_vals))
-                    outfile.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(*reverse_vals))
+                    outfile.write("Name\t\tMax mis-hit\t\tMax non-target hit\t\t# degens\t\tsequence\t\tTm\n")
+                    outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(*forward_vals))
+                    #outfile.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(*reverse_vals))
+                    outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(*reverse_vals))
 
 
                     forward_order_vals = get_ordering_info(target, forward, primers[forward])
                     reverse_order_vals = get_ordering_info(target, reverse, primers[reverse])
 
-                    outfile.write("\nOrdering information (csv):\n")
+                    outfile.write("\nOrdering information:\n")
                     # Target, Primer, Combined_Name, Primer (5'-3'), final_name, UT + Sequnece, To order
                     outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(*forward_order_vals))
                     outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(*reverse_order_vals))
 
                     # Target, Amplicon
-                    outfile.write("{},{}\n\n\n".format(target, amplicon))
+                    outfile.write("{}\t{}\n".format(target, amplicon))
+
+                    outfile.write("\n\n\n")
+
 
 
 
@@ -219,13 +223,15 @@ def get_number_degens(sequence):
     return out
 
 
+
+
 def get_ordering_info(target, name, sequence):
 
     ut1 = "ACCCAACTGAATGGAGC"
     ut2 = "ACGCACTTGACTTGTCTTC"
 
-    tails = {"forward": ("ut1", ut1),
-             "reverse": ("ut2", ut2)}
+    tails = {"forward": ("UT1", ut1),
+             "reverse": ("UT2", ut2)}
 
     data = name.split("_")
 
