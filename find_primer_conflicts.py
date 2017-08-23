@@ -12,6 +12,8 @@ def find_primer_conflicts(primer_fasta):
     out = parse_blast_output("primer_conflicts_blast.out")
     os.remove("primer_conflicts_blast.out")
 
+    output_conflicts(out)
+
     return out
 
 
@@ -45,3 +47,18 @@ def parse_blast_output(output):
 
 
     return conflicts
+
+
+
+def output_conflicts(conflicts):
+
+    with open("primer_conflicts.txt", "w") as out:
+        for length in conflicts:
+            if len(conflicts[length]) > 0:
+                for i in range(10, length-1, -1):
+                    out.write("Problematic primers with an alignment length of {}\n".format(length))
+                    out.write("{}\t{}\n\n".format(conflicts[i][0], conflicts[i][1]))
+
+
+def blast_all_primers(primer_fasta, combined_seqs):
+    subprocess.run("blastall -p blastn -i {} -d {} -m 8 -e 10 -o primers.blast.out".format(primer_fasta, combined_seqs), shell=True)
