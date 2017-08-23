@@ -202,8 +202,8 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target)
 
                     outfile.write("\nOrdering information:\n")
                     # Target, Primer, Combined_Name, Primer (5'-3'), final_name, UT + Sequnece, To order
-                    outfile.write("{},{},{},{},{},{},{}\n".format(*forward_order_vals))
-                    outfile.write("{},{},{},{},{},{},{}\n".format(*reverse_order_vals))
+                    outfile.write("{};{};{};{};{};{};{}\n".format(*forward_order_vals))
+                    outfile.write("{};{};{};{};{};{};{}\n".format(*reverse_order_vals))
 
                     # Target, Amplicon
                     outfile.write("{},{}\n".format(target, amplicon))
@@ -235,6 +235,7 @@ def get_ordering_info(target, name, sequence):
 
     data = name.split("_")
 
+    target = os.path.splitext(target)[0]
     primer_name = data[0] + data[1][0].upper()
     combined_name = primer_name + "_" + target
     final_name = combined_name + "_" + tails[data[1]][0]
