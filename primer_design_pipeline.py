@@ -4,6 +4,7 @@ import glob
 import os
 from Bio import SeqIO
 
+from get_tm import get_tm
 from get_seqs import get_seqs
 from get_genomes import get_genomes
 from generate_primers import generate_primers
@@ -183,12 +184,15 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target)
                 for data in combos[forward]:
                     reverse = data[0]
                     amplicon = data[2]
+                    tm_forward = get_tm(primers[forward])
+                    tm_reverse = get_tm(primers[reverse])
+                    
 
                     outfile.write("{} - {}\n".format(forward, reverse))
                     outfile.write("--------------------------------------------------------------------------------------\n")
 
-                    forward_vals = [forward, mis_hits[0][forward], non_target_hits[0][forward], get_number_degens(primers[forward]), primers[forward], "tm_placeholder"]
-                    reverse_vals = [reverse, mis_hits[0][reverse], non_target_hits[0][reverse], get_number_degens(primers[reverse]), primers[reverse], "tm_placeholder"]
+                    forward_vals = [forward, mis_hits[0][forward], non_target_hits[0][forward], get_number_degens(primers[forward]), primers[forward], tm_forward]
+                    reverse_vals = [reverse, mis_hits[0][reverse], non_target_hits[0][reverse], get_number_degens(primers[reverse]), primers[reverse], tm_reverse]
                     
                     # Name, mis-hit, non-target hit, degens, sequence, tm
                     outfile.write("Name\t\tMax mis-hit\t\tMax non-target hit\t\t# degens\t\tsequence\t\tTm\n")
@@ -197,13 +201,13 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target)
                     outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(*reverse_vals))
 
 
-                    forward_order_vals = get_ordering_info(target, forward, primers[forward])
-                    reverse_order_vals = get_ordering_info(target, reverse, primers[reverse])
+                    forward_order_vals = get_ordering_info(target, forward, primers[forward], tm_forward, amplicon)
+                    reverse_order_vals = get_ordering_info(target, reverse, primers[reverse], tm_reverse, amplicon)
 
                     outfile.write("\nOrdering information:\n")
-                    # Target, Primer, Combined_Name, Primer (5'-3'), final_name, UT + Sequnece, To order
-                    outfile.write("{};{};{};{};{};{};{}\n".format(*forward_order_vals))
-                    outfile.write("{};{};{};{};{};{};{}\n".format(*reverse_order_vals))
+                    # Target, Primer, Combined_Name, Primer (5'-3'), final_name, UT + Sequnece, To order, Tm, Amplicon, Amplicon Length, Amplicon length + UT
+                    outfile.write("{};{};{};{};{};{};{};{};{};{};{}\n".format(*forward_order_vals))
+                    outfile.write("{};{};{};{};{};{};{};{};{};{};{}\n".format(*reverse_order_vals))
 
                     # Target, Amplicon
                     outfile.write("{},{}\n".format(target, amplicon))
@@ -225,7 +229,7 @@ def get_number_degens(sequence):
 
 
 
-def get_ordering_info(target, name, sequence):
+def get_ordering_info(target, name, sequence, tm, amplicon):
 
     ut1 = "ACCCAACTGAATGGAGC"
     ut2 = "ACGCACTTGACTTGTCTTC"
@@ -242,7 +246,7 @@ def get_ordering_info(target, name, sequence):
     sequence_tail = tails[data[1]][1] + sequence
     to_order = final_name + "," + sequence_tail
 
-    return [target, primer_name, combined_name, sequence, final_name, sequence_tail, to_order]
+    return [target, primer_name, combined_name, sequence, final_name, sequence_tail, to_order, tm, amplicon, len(amplicon), len(amplicon) + 36]
     
 
 
