@@ -4,22 +4,37 @@ import math
 # Driver
 def get_tm(primer, oligo_conc, na_conc, mg_conc):
 
-    primer = min_primer_conversion(primer)
+    out = 0
+
+
+    min_primer = min_primer_conversion(primer)
+    max_primer = max_primer_conversion(primer)
+
+    for p in [min_primer, max_primer]:
     
-    enthalpy, entropy = get_dH_dS(primer, oligo_conc, na_conc, mg_conc)
-    uncorrected_tm = get_uncorrected_tm(enthalpy, entropy, oligo_conc)
+        enthalpy, entropy = get_dH_dS(p)
+        uncorrected_tm = get_uncorrected_tm(enthalpy, entropy, oligo_conc)
 
-    if na_conc == 0:
-        ratio = 6.0
-    else:
-        ratio = math.sqrt(mg_conc) / na_conc
+        if na_conc == 0 and mg_conc == 0:
+            out += uncorrected_tm - 273.15
+            continue
 
-    if ratio < .22:
-        tm = monovalent_correction(primer, na_conc, uncorrected_tm)
-    else:
-        tm = divalent_correction(primer, na_conc, mg_conc, uncorrected_tm, ratio)
+        if na_conc == 0:
+            ratio = 6.0
+        else:
+            ratio = math.sqrt(mg_conc) / (na_conc/1000.0)
 
-    return round(tm, 2)
+
+        if ratio < .22:
+            tm = monovalent_correction(primer, na_conc, uncorrected_tm)
+        else:
+            tm = divalent_correction(primer, na_conc, mg_conc, uncorrected_tm, ratio)
+
+        print(tm)
+        out += tm
+
+    out /= 2
+    return round(out,2)
 
 
 
@@ -35,8 +50,7 @@ def get_uncorrected_tm(enthalpy, entropy, oligo_conc):
 
 # Get enthalpy and entropy according to nearest-neighbor
 #parameters found in Santalucia, 1998
-def get_dH_dS(primer, oligo_conc, na_conc, mg_conc):
-
+def get_dH_dS(primer):
 
     enthalpy = 0
     entropy = 14
@@ -74,7 +88,6 @@ def get_dH_dS(primer, oligo_conc, na_conc, mg_conc):
     enthalpy *= -100.0
     entropy *= -.1
 
-
     return enthalpy, entropy
 
 
@@ -89,7 +102,7 @@ def get_gc_content(primer):
 def monovalent_correction(primer, na_conc, tm):
 
     if na_conc == 0:
-        na_conc = 1.5
+        na_conc = 150
 
     gc_content = get_gc_content(primer)
     
@@ -107,9 +120,9 @@ def monovalent_correction(primer, na_conc, tm):
 def divalent_correction(primer, na_conc, mg_conc, tm, ratio):
 
     if na_conc == 0:
-        na_conc = 1.5
+        na_conc = 150
 
-    if ratio < 6:
+    if ratio > 6:
         a = 3.92
         d = 1.42
         g = 8.31
@@ -159,6 +172,5 @@ def max_primer_conversion(primer):
     return primer
 
 
-
 if __name__ == "__main__":
-    print(get_tm("CTCTATCTAGCTCTCT", .2, 0, 100))
+    print(get_tm("GAAGCTTCRYTGGTCAGTTC", .2, 0, 3))
