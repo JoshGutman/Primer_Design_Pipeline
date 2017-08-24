@@ -267,4 +267,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore, args.olgio_conc, args.na_conc, args.mg_conc)
+    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore, args.oligo_conc, args.na_conc, args.mg_conc)
