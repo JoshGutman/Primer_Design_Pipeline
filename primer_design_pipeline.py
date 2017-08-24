@@ -18,7 +18,7 @@ from find_primer_conflicts import find_primer_conflicts, blast_all_primers
 
 
 # Driver
-def primer_design_pipeline(target, directory, config_file, target_list, reference_fasta, lower, upper, ignore):
+def primer_design_pipeline(target, directory, config_file, target_list, reference_fasta, lower, upper, ignore, oligo_conc, na_conc, mg_conc):
 
     combine_seqs(directory)
     
@@ -33,7 +33,7 @@ def primer_design_pipeline(target, directory, config_file, target_list, referenc
 
     get_all_amplicons(combos, reference_fasta)
     
-    output_candidate_primers(combos, primers, mis_hits, non_target_hits, target)
+    output_candidate_primers(combos, primers, mis_hits, non_target_hits, target, [oligo_conc, na_conc, mg_conc])
 
     print(primers)
 
@@ -169,7 +169,7 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits):
 
 
 
-def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target):
+def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target, tm_args):
 
     with open("candidate_primers.txt", "w") as outfile:
         #outfile.write("Forward name\tReverse name\tMax mis-hit (ID, Length)\tMax non-target-hit (ID, length)\t# forward degens\t # reverse degens\tForward sequence\tReverse Sequence\n")
@@ -184,8 +184,8 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target)
                 for data in combos[forward]:
                     reverse = data[0]
                     amplicon = data[2]
-                    tm_forward = get_tm(primers[forward])
-                    tm_reverse = get_tm(primers[reverse])
+                    tm_forward = get_tm(primers[forward], *tm_args)
+                    tm_reverse = get_tm(primers[reverse], *tm_args)
                     
 
                     outfile.write("{} - {}\n".format(forward, reverse))
@@ -261,8 +261,10 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--lower", help="Lower bound of amplicon size", type=int, default=150)
     parser.add_argument("-u", "--upper", help="Upper bound of amplicon size", type=int, default=250)
     parser.add_argument("-i", "--ignore", help="Threshold percentage to consider degens", type=int, default=95)
-    
+    parser.add_argument("-ol", "--oligo_conc", help="Oligo concentration (μM) for calculating Tm", type=float, default=.25)
+    parser.add_argument("-na", "--na_conc", help="Na+ concentration (mM) for calculating Tm", type=float, default=50)
+    parser.add_argument("-mg", "--mg_conc", help="Mg++ concentration (mM) for calculating Tm", type=float, default=0)
 
     args = parser.parse_args()
 
-    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore)
+    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore, args.olgio_conc, args.na_conc, args.mg_conc)
