@@ -2,31 +2,40 @@ import math
 
 
 # Driver
-def get_tm(primer, primer_conc, na_conc, mg_conc):
-    
-    enthalpy, entropy = get_dH_dS(primer, primer_conc, na_conc, mg_conc)
-    uncorrected_tm = get_uncorrected_tm(enthalpy, entropy, primer_conc)
+def get_tm(primer, oligo_conc, na_conc, mg_conc):
 
-    ratio = math.sqrt(mg_conc) / na_conc
+    primer = min_primer_conversion(primer)
+    
+    enthalpy, entropy = get_dH_dS(primer, oligo_conc, na_conc, mg_conc)
+    uncorrected_tm = get_uncorrected_tm(enthalpy, entropy, oligo_conc)
+
+    if na_conc == 0:
+        ratio = 6.0
+    else:
+        ratio = math.sqrt(mg_conc) / na_conc
 
     if ratio < .22:
         tm = monovalent_correction(primer, na_conc, uncorrected_tm)
     else:
         tm = divalent_correction(primer, na_conc, mg_conc, uncorrected_tm, ratio)
 
-    return tm
+    return round(tm, 2)
 
 
 
-def get_uncorrected_tm(enthalpy, entropy, primer_conc):
 
-    term = 1.9865 * math.log(primer_conc/1000000.0)
+# Tm = deltaH / (deltaS - R*ln(Na+))
+def get_uncorrected_tm(enthalpy, entropy, oligo_conc):
+
+    term = 1.9865 * math.log(oligo_conc/1000000.0)
 
     return (enthalpy / (entropy + term))
     
 
 
-def get_dH_dS(primer, primer_conc, na_conc, mg_conc):
+# Get enthalpy and entropy according to nearest-neighbor
+#parameters found in Santalucia, 1998
+def get_dH_dS(primer, oligo_conc, na_conc, mg_conc):
 
 
     enthalpy = 0
@@ -45,8 +54,6 @@ def get_dH_dS(primer, primer_conc, na_conc, mg_conc):
                     "TA": 213, "TC": 222, "TG": 227, "TT": 222}
 
         
-
-
     terminal = [primer[0], primer[-1]]
 
     for t in terminal:
@@ -78,11 +85,15 @@ def get_gc_content(primer):
                     
 
 
-def monovalent_correction(primer, na_conc, temp):
+# Owczarzy et al., 2004
+def monovalent_correction(primer, na_conc, tm):
+
+    if na_conc == 0:
+        na_conc = 1.5
 
     gc_content = get_gc_content(primer)
     
-    term0 = 1/temp
+    term0 = 1/tm
     term1 = ((4.29 * gc_content) - 3.95) * .00001 * math.log(na_conc / 1000.0)
     term2 = 9.4 * .000001 * (math.log(na_conc / 1000.0)**2.0)
 
@@ -91,7 +102,12 @@ def monovalent_correction(primer, na_conc, temp):
     return 1/tm_inverse - 273.15
 
 
-def divalent_correction(primer, na_conc, mg_conc, temp, ratio):
+
+# Owczarzy et al., 2008
+def divalent_correction(primer, na_conc, mg_conc, tm, ratio):
+
+    if na_conc == 0:
+        na_conc = 1.5
 
     if ratio < 6:
         a = 3.92
@@ -104,7 +120,7 @@ def divalent_correction(primer, na_conc, mg_conc, temp, ratio):
 
     gc_content = get_gc_content(primer)
 
-    term0 = 1/temp
+    term0 = 1/tm
     term1 = a - (.91*math.log(mg_conc/1000.0))
     term2 = gc_content * (6.26 + (d * math.log(mg_conc/1000.0)))
     term3 = (1/(2 * (len(primer)-1))) * (-48.2 + (52.5 * math.log(mg_conc/1000.0)) + (g * math.log(mg_conc/1000.0)**2.0))
@@ -115,7 +131,34 @@ def divalent_correction(primer, na_conc, mg_conc, temp, ratio):
 
 
 
+# Convert degens to the base with the least energy
+def min_primer_conversion(primer):
+
+    # A, T, G, C
+    min_degens = {"R":"A", "Y":"T", "S":"G", "W":"A",
+                  "K":"T", "M":"A", "B":"T", "D":"A",
+                  "H":"A", "V":"A", "N":"A"}
+
+    for degen in min_degens:
+        primer = primer.replace(degen, min_degens[degen])
+
+    return primer
+
+
+# Convert degens to the base with the most energy
+def max_primer_conversion(primer):
+
+    # C, G, T, A
+    max_degens = {"R":"G", "Y":"C", "S":"C", "W":"T",
+                  "K":"G", "M":"C", "B":"C", "D":"G",
+                  "H":"C", "V":"C", "N":"C"}
+
+    for degen in max_degens:
+        primer = primer.replace(degen, max_degens[degen])
+
+    return primer
+
 
 
 if __name__ == "__main__":
-    print(get_tm("CTCTATCTAGCTCTCT", .25, 50, 0))
+    print(get_tm("CTCTATCTAGCTCTCT", .2, 0, 100))
