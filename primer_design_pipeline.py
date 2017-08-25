@@ -32,7 +32,7 @@ def primer_design_pipeline(target, directory, config_file, target_list, referenc
 
     combos = get_combos(primers, lower, upper)
 
-    get_all_amplicons(combos, reference_fasta, project_dir)
+    get_all_amplicons(combos, primers, reference_fasta, project_dir)
     
     output_candidate_primers(combos, primers, mis_hits, non_target_hits, target, [oligo_conc, na_conc, mg_conc])
 
@@ -40,7 +40,7 @@ def primer_design_pipeline(target, directory, config_file, target_list, referenc
 
 
 
-def get_all_amplicons(combos, reference_fasta, project_dir):
+def get_all_amplicons(combos, primers, reference_fasta, project_dir):
 
     def _get_amplicon(forward_seq, reverse_seq, reference_fasta, project_dir):
 
@@ -57,7 +57,9 @@ def get_all_amplicons(combos, reference_fasta, project_dir):
     for forward in combos:
         for i in range(len(combos[forward])):
             reverse = combos[forward][i][0]
-            combos[forward][i].append(_get_amplicon(forward, reverse, reference_fasta, project_dir))
+            forward_seq = primers[forward]
+            reverse_seq = primers[reverse]
+            combos[forward][i].append(_get_amplicon(forward_seq, reverse_seq, reference_fasta, project_dir))
 
 
 
