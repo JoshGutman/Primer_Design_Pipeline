@@ -4,7 +4,8 @@ import math
 # Driver
 def get_tm(primer, oligo_conc, na_conc, mg_conc):
 
-    out = 0
+    out = []
+    avg = 0
 
 
     min_primer = min_primer_conversion(primer)
@@ -30,11 +31,11 @@ def get_tm(primer, oligo_conc, na_conc, mg_conc):
         else:
             tm = divalent_correction(primer, na_conc, mg_conc, uncorrected_tm, ratio)
 
-        print(tm)
-        out += tm
+        out.append(round(tm, 2))
+        avg += tm
 
-    out /= 2
-    return round(out,2)
+    out.append(round(avg / 2, 2))
+    return out
 
 
 
