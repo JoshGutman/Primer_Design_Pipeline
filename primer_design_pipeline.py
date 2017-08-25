@@ -1,6 +1,7 @@
 import subprocess
 import argparse
 import glob
+import sys
 import os
 from Bio import SeqIO
 
