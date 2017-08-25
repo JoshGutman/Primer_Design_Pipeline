@@ -195,9 +195,8 @@ def output_candidate_primers(combos, primers, mis_hits, non_target_hits, target,
                     reverse_vals = [reverse, mis_hits[0][reverse], non_target_hits[0][reverse], get_number_degens(primers[reverse]), primers[reverse], tm_reverse]
                     
                     # Name, mis-hit, non-target hit, degens, sequence, tm
-                    outfile.write("Name\t\tMax mis-hit\t\tMax non-target hit\t\t# degens\t\tsequence\t\tTm\n")
+                    outfile.write("Name\t\tMax mis-hit\t\tMax non-target hit\t\t# degens\t\tsequence\t\t[Min,Max,Avg] Tm\n")
                     outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(*forward_vals))
-                    #outfile.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(*reverse_vals))
                     outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(*reverse_vals))
 
 
@@ -245,6 +244,7 @@ def get_ordering_info(target, name, sequence, tm, amplicon):
     final_name = combined_name + "_" + tails[data[1]][0]
     sequence_tail = tails[data[1]][1] + sequence
     to_order = final_name + "," + sequence_tail
+    tm = tm[2]
 
     return [target, primer_name, combined_name, sequence, final_name, sequence_tail, to_order, tm, amplicon, len(amplicon), len(amplicon) + 36]
     
