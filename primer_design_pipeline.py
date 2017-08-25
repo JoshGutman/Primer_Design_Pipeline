@@ -18,7 +18,7 @@ from find_primer_conflicts import find_primer_conflicts, blast_all_primers
 
 
 # Driver
-def primer_design_pipeline(target, directory, config_file, target_list, reference_fasta, lower, upper, ignore, oligo_conc, na_conc, mg_conc):
+def primer_design_pipeline(target, directory, config_file, target_list, reference_fasta, lower, upper, ignore, oligo_conc, na_conc, mg_conc, project_dir):
 
     combine_seqs(directory)
     
@@ -31,7 +31,7 @@ def primer_design_pipeline(target, directory, config_file, target_list, referenc
 
     combos = get_combos(primers, lower, upper)
 
-    get_all_amplicons(combos, reference_fasta)
+    get_all_amplicons(combos, reference_fasta, project_dir)
     
     output_candidate_primers(combos, primers, mis_hits, non_target_hits, target, [oligo_conc, na_conc, mg_conc])
 
@@ -39,11 +39,11 @@ def primer_design_pipeline(target, directory, config_file, target_list, referenc
 
 
 
-def get_all_amplicons(combos, reference_fasta):
+def get_all_amplicons(combos, reference_fasta, project_dir):
 
-    def _get_amplicon(forward_seq, reverse_seq, reference_fasta):
+    def _get_amplicon(forward_seq, reverse_seq, reference_fasta, project_dir):
 
-        subprocess.run("./neben_linux_64 --primers {}:{} {} > amplicon".format(forward_seq, reverse_seq, reference_fasta), shell=True)
+        subprocess.run("{}/neben_linux_64 --primers {}:{} {} > amplicon".format(project_dir, forward_seq, reverse_seq, reference_fasta), shell=True)
         with open("amplicon", "rU") as f:
             out = f.readline()
 
@@ -56,7 +56,7 @@ def get_all_amplicons(combos, reference_fasta):
     for forward in combos:
         for i in range(len(combos[forward])):
             reverse = combos[forward][i][0]
-            combos[forward][i].append(_get_amplicon(forward, reverse, reference_fasta))
+            combos[forward][i].append(_get_amplicon(forward, reverse, reference_fasta, project_dir))
 
 
 
@@ -265,6 +265,7 @@ if __name__ == "__main__":
     parser.add_argument("-na", "--na_conc", help="Na+ concentration (mM) for calculating Tm", type=float, default=50)
     parser.add_argument("-mg", "--mg_conc", help="Mg++ concentration (mM) for calculating Tm", type=float, default=0)
 
-    args = parser.parse_args()
+    project_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 
-    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore, args.oligo_conc, args.na_conc, args.mg_conc)
+    args = parser.parse_args()
+    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore, args.oligo_conc, args.na_conc, args.mg_conc, project_dir)
