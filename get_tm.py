@@ -368,7 +368,7 @@ def _max_primer_conversion(primer):
         maximum energy.
 
     See Also:
-        _max_primer_conversion : Convert primer to sequence with most energy.
+        _min_primer_conversion : Convert primer to sequence with most energy.
 
     Notes:
         From most energy to least energy, the bases are C, G, T, A.
