@@ -86,7 +86,7 @@ def _parse_blast_output(output):
             def _conflict_is_unique():
                 # fields[3]=length, fields[0]=primer #1, fields[1]=primer #2
                 # What is fields[5]?
-                if int(fields[3]) > 10 and int(fields[5]) != 0:
+                if int(fields[3]) > 10 or int(fields[5]) != 0:
                     return False
                 if (fields[0], fields[1]) in duplicates:
                     return False
