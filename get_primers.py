@@ -253,7 +253,7 @@ class Primer:
             combined_name,
             final_name,
             sequence_tail,
-            to_order
+            to_order,
             self.tm[2],   #Tm
             amplicon,   #amplicon
             len(amplicon),  #amplicon length
