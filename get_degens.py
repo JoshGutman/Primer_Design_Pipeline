@@ -24,7 +24,7 @@ def get_degens(primers, genomes, ignore_percent):
                 elif primer.orientation == "reverse":
                     base = genome[primer.value - length + i]
                 
-                if primers.sequence[i] != base:
+                if primer.sequence[i] != base:
                     if base != "-":
                         if base not in degens[i]:
                             snps[base] += 1
