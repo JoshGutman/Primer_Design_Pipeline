@@ -24,7 +24,7 @@ def primer_design_pipeline(target, directory, config_file, target_list, referenc
     blast_all_primers("alignment_blast_in.fasta", "combined.seqs")
     find_primer_conflicts("alignment_blast_in.fasta")
 
-    combos = get_combos(primers, lower, upper)
+    combos = get_combos(primers, lower, upper, reference_fasta, project_dir)
     
     output_candidate_primers(combos, target, [oligo_conc, na_conc, mg_conc])
 
