@@ -1,5 +1,4 @@
-"""
-Calculates the melting temperature of primers.
+"""Calculates the melting temperature of primers.
 
 The driver function, get_tm(), estimates the minimum, maximum, and average
 melting temperature in a PCR reaction of a primer.
