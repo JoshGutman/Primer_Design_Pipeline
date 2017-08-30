@@ -243,7 +243,7 @@ class Primer:
         target = os.path.splitext(target)[0]
         primer_name = str(self.value) + self.orientation[0].upper()
         combined_name = "{}_{}".format(primer_name, target)
-        final_name = "{}_{}".format(combined_name, tails[self.orientation][0]),
+        final_name = "{}_{}".format(combined_name, tails[self.orientation][0])
         sequence_tail = tails[self.orientation][1] + self.sequence
         to_order = "{},{}".format(final_name, sequence_tail)
         
