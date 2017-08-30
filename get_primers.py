@@ -205,12 +205,13 @@ class Primer:
 
         if "LEFT" in original_name:
             self.name = "{}_forward".format(value)
+            self.orientation = "forward"
         elif "RIGHT" in original_name:
             self.name = "{}_reverse".format(value)
+            self.orientation = "reverse"
         
         self.sequence = sequence
         self.value = int(value)
-        self.orientation = self.name.split("_")[1]
         self.length = len(sequence)
         self.num_degens = self.count_degens()
 
