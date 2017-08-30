@@ -234,26 +234,25 @@ class Primer:
 
     def set_ordering_info(self, target, amplicon):
 
-    ut1 = "ACCCAACTGAATGGAGC"
-    ut2 = "ACGCACTTGACTTGTCTTC"
+        ut1 = "ACCCAACTGAATGGAGC"
+        ut2 = "ACGCACTTGACTTGTCTTC"
 
-    tails = {"forward": ("UT1", ut1),
-             "reverse": ("UT2", ut2)}
-    
-    # Target, primer_name, combined_name, final_name, sequence_tail, to_order, tm
-    lst = [
-        os.path.splitext(target)[0],    #target
-        str(self.value) + self.orientation[0].upper(),  #primer_name
-        "{}_{}".format(primer_name, target),    #combined_name
-        "{}_{}".format(combined_name, tails[self.orientation][0]), #final_name
-        tails[self.orientation][1] + self.sequence, #sequence_tail
-        "{},{}".format(final_name, sequence_tail),  #to_order
-        self.tm[2],   #Tm
-        amplicon,   #amplicon
-        len(amplicon),  #amplicon length
-        len(amplicon) + 36 # amplicon length + UT length
-        ]
-    self.ordering_info = ";".join(lst)
+        tails = {"forward": ("UT1", ut1),
+                 "reverse": ("UT2", ut2)}
+        
+        lst = [
+            os.path.splitext(target)[0],    #target
+            str(self.value) + self.orientation[0].upper(),  #primer_name
+            "{}_{}".format(primer_name, target),    #combined_name
+            "{}_{}".format(combined_name, tails[self.orientation][0]), #final_name
+            tails[self.orientation][1] + self.sequence, #sequence_tail
+            "{},{}".format(final_name, sequence_tail),  #to_order
+            self.tm[2],   #Tm
+            amplicon,   #amplicon
+            len(amplicon),  #amplicon length
+            len(amplicon) + 36 # amplicon length + UT length
+            ]
+        self.ordering_info = ";".join(lst)
 
     def __hash__(self):
         return hash(self.name + self.sequence)
