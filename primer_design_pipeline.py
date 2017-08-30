@@ -8,7 +8,7 @@ from Bio import SeqIO
 from get_tm import get_tm
 from get_primers import get_primers
 from get_genomes import get_genomes
-from generate_primers import generate_primers
+from get_degens import get_degens
 from find_primer_conflicts import find_primer_conflicts, blast_all_primers
 
 
