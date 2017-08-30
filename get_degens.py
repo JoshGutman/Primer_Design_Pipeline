@@ -1,6 +1,6 @@
 # Should ignore_percent be 90% or 10% if you want to ignore 10% of SNPs before considering degens
 # Right now it's the former
-
+import sys
 
 def get_degens(primers, genomes, ignore_percent):
 
@@ -8,6 +8,9 @@ def get_degens(primers, genomes, ignore_percent):
         ignore_percent /= 100
 
     for primer in primers:
+
+        if primer.orientation == "reverse":
+            primer.sequence = reverse_complement(primer.sequence)
 
         degens = [[primer.sequence[i]] for i in range(primer.length)]
 
@@ -23,6 +26,9 @@ def get_degens(primers, genomes, ignore_percent):
                     base = genome[primer.value + i - 1]
                 elif primer.orientation == "reverse":
                     base = genome[primer.value - primer.length + i]
+                else:
+                    print("ERROR 0")
+                    sys.exit()
                 
                 if primer.sequence[i] != base:
                     if base != "-":
