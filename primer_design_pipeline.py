@@ -87,8 +87,8 @@ def output_candidate_primers(combos, target, tm_args):
 
         else:
             for combo in combos:
-                combo.forward.tm = get_tm(combos.forward.sequence, *tm_args)
-                combo.reverse.tm = get_tm(combos.reverse.sequence, *tm_args)
+                combo.forward.tm = get_tm(combo.forward.sequence, *tm_args)
+                combo.reverse.tm = get_tm(combo.reverse.sequence, *tm_args)
 
                 outfile.write(combo.name + "\n")
                 outfile.write("--------------------------------------------------------------------------------------\n")
