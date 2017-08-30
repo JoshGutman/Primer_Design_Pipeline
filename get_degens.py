@@ -9,6 +9,7 @@ def get_degens(primers, genomes, ignore_percent):
 
     for primer in primers:
 
+        print(primer.orientation)
         degens = [[primer.sequence[i]] for i in range(primer.length)]
 
         for i in range(primer.length):
