@@ -23,7 +23,7 @@ def get_degens(primers, genomes, ignore_percent):
                 if primer.orientation == "forward":
                     base = genome[primer.value + i - 1]
                 elif primer.orientation == "reverse":
-                    base = genome[primer.value - length + i]
+                    base = genome[primer.value - primer.length + i]
                 
                 if primer.sequence[i] != base:
                     if base != "-":
