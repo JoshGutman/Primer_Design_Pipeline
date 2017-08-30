@@ -254,10 +254,10 @@ class Primer:
             final_name,
             sequence_tail,
             to_order,
-            self.tm[2],   #Tm
+            str(self.tm[2]),   #Tm
             amplicon,   #amplicon
-            len(amplicon),  #amplicon length
-            len(amplicon) + 36 # amplicon length + UT length
+            str(len(amplicon)),  #amplicon length
+            str(len(amplicon) + 36) # amplicon length + UT length
             ]
         self.ordering_info = ";".join(lst)
 
