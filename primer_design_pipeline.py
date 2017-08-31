@@ -51,7 +51,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 def split_multifasta(fasta_file):
     out = set()
     with open(fasta_file) as infile:
-        for record in SeqIO.parse(f, "fasta"):
+        for record in SeqIO.parse(infile, "fasta"):
             outfile_name = str(record.id) + ".fasta"
             out.add(outfile_name)
             with open(outfile_name, "w") as outfile:
