@@ -67,7 +67,7 @@ def split_multifasta(fasta_file):
 # Create fasta used to make blast database
 def combine_seqs(directory):
 
-    if os.path.isfile(Constants.combined_seqs):
+    if os.path.isfile("combined.seqs"):
         return
 
     with open("combined.seqs", "w") as f:
