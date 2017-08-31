@@ -6,11 +6,7 @@ import os
 from Bio import SeqIO
 
 from setup import *
-from get_tm import get_tm
-from get_primers import get_primers
-from get_genomes import get_genomes
-from get_degens import get_degens
-from find_primer_conflicts import find_primer_conflicts, blast_all_primers
+
 
 
 # Driver
@@ -24,6 +20,12 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
     init(combined_seqs, target_list, reference_fasta, keep)
     
+    from get_tm import get_tm
+    from get_primers import get_primers
+    from get_genomes import get_genomes
+    from get_degens import get_degens
+    from find_primer_conflicts import find_primer_conflicts, blast_all_primers
+
     targets = split_multifasta(target_file)
     
     
