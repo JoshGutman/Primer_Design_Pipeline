@@ -40,6 +40,12 @@ def get_primers(config_file, target, directory, lower, upper):
 
     """
 
+    print(Constants.combined_seqs)
+    print(Constants.config_file)
+    print(Constants.target_list)
+    print(Constants.reference_fasta)
+    print(Constants.keep_files)
+
     modify_input_file(config_file, target, lower, upper)
     subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
     primers = get_primers_from_primer3("primer3_out")
