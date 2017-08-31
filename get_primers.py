@@ -3,12 +3,7 @@ import os
 import glob
 from Bio import SeqIO
 
-#TODO
-# Return mis_hits and hits
-# > Possibly write them to a file
-# Use the hits mis_hits and hits when selecting final primers in targetrate_primers.py
-# Delete old files
-
+from setup import *
 
 # Driver
 # Takes in primer3_template.txt, target.fasta, lower bound, upper bound

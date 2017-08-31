@@ -7,6 +7,7 @@ against a database of all reference genomes.
 import os
 import subprocess
 
+from setup import *
 
 def find_primer_conflicts(primer_fasta):
     """Finds conflicts between all candidate primers

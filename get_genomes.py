@@ -3,6 +3,8 @@ import os
 import subprocess
 from Bio import SeqIO
 
+from setup import *
+
 """
 Will tblastn ever be run?
 Is genome length of 500 a magic number? (Line 89)
