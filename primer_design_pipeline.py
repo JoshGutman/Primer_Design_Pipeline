@@ -31,7 +31,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
         dir_name = os.path.splitext(target)[0]
         os.mkdir(dir_name)
-        subprocess.run("mv {} {}".format(target, dir_name), shell=True)
+        subprocess.run("cp {} {}".format(target, dir_name), shell=True)
         subprocess.run("cp {} {}".format(config_file, dir_name), shell=True)
         os.chdir(dir_name)
         
@@ -46,6 +46,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         
         output_candidate_primers(combos, target, [oligo_conc, na_conc, mg_conc])
 
+        os.chdir("..")
 
 
 def split_multifasta(fasta_file):
