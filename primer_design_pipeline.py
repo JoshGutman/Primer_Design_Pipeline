@@ -178,7 +178,7 @@ class Combo:
         subprocess.run("{}/neben_linux_64 --primers {}:{} {} > amplicon".format(project_dir,
                                                                                 self.forward.sequence,
                                                                                 self.reverse.sequence,
-                                                                                Constants.reference_fasta),
+                                                                                Constants.combined_seqs),
                                                                                 shell=True)
         with open("amplicon", "rU") as f:
             out = f.readline()
