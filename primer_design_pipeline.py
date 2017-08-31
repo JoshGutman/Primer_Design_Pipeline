@@ -19,7 +19,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
                            na_conc, mg_conc, project_dir, keep):
 
     combined_seqs = combine_seqs(directory)
-    
+
     target_list = os.path.abspath(target_list)
     reference_fasta = os.path.abspath(reference_fasta)
     config_file = os.path.abspath(config_file)
@@ -70,7 +70,7 @@ def split_multifasta(fasta_file):
 def combine_seqs(directory):
 
     if os.path.isfile("combined.seqs"):
-        return
+        return os.path.abspath("combined.seqs")
 
     with open("combined.seqs", "w") as f:
 
