@@ -6,7 +6,11 @@ import os
 from Bio import SeqIO
 
 from setup import *
-
+from get_tm import get_tm
+from get_primers import get_primers
+from get_genomes import get_genomes
+from get_degens import get_degens
+from find_primer_conflicts import find_primer_conflicts, blast_all_primers
 
 
 # Driver
@@ -15,16 +19,12 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
                            na_conc, mg_conc, project_dir, keep):
 
     combined_seqs = combine_seqs(directory)
+    
     target_list = os.path.abspath(target_list)
     reference_fasta = os.path.abspath(reference_fasta)
+    config_file = os.path.abspath(config_file)
 
-    init(combined_seqs, target_list, reference_fasta, keep)
-
-    from get_tm import get_tm
-    from get_primers import get_primers
-    from get_genomes import get_genomes
-    from get_degens import get_degens
-    from find_primer_conflicts import find_primer_conflicts, blast_all_primers
+    init(combined_seqs, config_file, target_list, reference_fasta, keep)
 
     targets = split_multifasta(target_file)
 
@@ -36,6 +36,8 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         subprocess.run("cp {} {}".format(target, dir_name), shell=True)
         subprocess.run("cp {} {}".format(Constants.config_file, dir_name), shell=True)
         os.chdir(dir_name)
+        config_file = os.path.abspath(os.path.basename(config_file))
+
 
         primers, mis_hits, non_target_hits = get_primers(config_file, target, directory, lower, upper)
         genomes = get_genomes(target, directory)
@@ -44,7 +46,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         blast_all_primers("alignment_blast_in.fasta", Constants.combined_seqs)
         find_primer_conflicts("alignment_blast_in.fasta")
 
-        combos = get_combos(primers, lower, upper, reference_fasta, project_dir)
+        combos = get_combos(primers, lower, upper, project_dir)
 
         output_candidate_primers(combos, target, [oligo_conc, na_conc, mg_conc])
 
@@ -85,7 +87,7 @@ def combine_seqs(directory):
     return os.path.abspath("combined.seqs")
 
 
-def get_combos(primers, lower, upper, reference_fasta, project_dir):
+def get_combos(primers, lower, upper, project_dir):
     out = set()
 
     forwards = []
@@ -102,7 +104,7 @@ def get_combos(primers, lower, upper, reference_fasta, project_dir):
             combo_range = abs(f.value - r.value)
             if lower <= combo_range <= upper:
                 temp_combo = Combo(f, r)
-                temp_combo.set_amplicon(reference_fasta, project_dir)
+                temp_combo.set_amplicon(project_dir)
                 out.add(temp_combo)
 
     return out
@@ -171,12 +173,13 @@ class Combo:
         self.combined_name = None
         self.sequence = None
 
-    def set_amplicon(self, reference_fasta, project_dir):
+    def set_amplicon(self, project_dir):
 
         subprocess.run("{}/neben_linux_64 --primers {}:{} {} > amplicon".format(project_dir,
                                                                                 self.forward.sequence,
                                                                                 self.reverse.sequence,
-                                                                                REFERENCE_FASTA),shell=True)
+                                                                                Constants.reference_fasta),
+                                                                                shell=True)
         with open("amplicon", "rU") as f:
             out = f.readline()
 
