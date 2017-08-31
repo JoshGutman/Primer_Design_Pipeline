@@ -9,7 +9,7 @@ from setup import *
 # Takes in primer3_template.txt, target.fasta, lower bound, upper bound
 # Returns (seqs, target mis-hits, non-target hits)
 #         > All dicts with primer name as key, mis-hits and hits have values of lists of tuples with (ID, length)
-def get_primers(config_file, target, directory, target_list, lower, upper):
+def get_primers(config_file, target, directory, lower, upper):
     """Get primers and primer metadata.
 
     Get primers using primer3. Then find the mis-hits and non-target hits of
@@ -20,7 +20,6 @@ def get_primers(config_file, target, directory, target_list, lower, upper):
         config_file (str): Path to primer3 config file.
         target (str): Path to target genome.
         directory (str): Path to directory with reference .fasta files.
-        target_list (str): Path to file containing list of reference genomes.
         lower (int): lower bound of amplicon size.
         upper (int): upper bound of amplicon size.
 
@@ -37,24 +36,20 @@ def get_primers(config_file, target, directory, target_list, lower, upper):
             of tuples, each tuple being a non-target hit ID and length.
 
     Notes:
-        
+
 
     """
 
-    print(COMBINED_SEQS)
-    print(CONFIG_FILE)
-    print(REFERENCE_FASTA)
-    print(KEEP_FILES)
     modify_input_file(config_file, target, lower, upper)
     subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
     primers = get_primers_from_primer3("primer3_out")
-    
-    run_blast(directory, target_list)
+
+    run_blast(directory)
     mis_hits, non_target_hits = get_bad_hits(primers)
-    
+
     os.remove("primer3_out")
     os.remove("config_modified.txt")
-    
+
     return (primers, mis_hits, non_target_hits)
 
 
@@ -119,14 +114,14 @@ def get_primers_from_primer3(primer3_output):
     return out
 
 
-def run_blast(directory, target_list):
+def run_blast(directory):
 
     targets = set()
-    with open(TARGET_LIST, "rU") as f:
+    with open(Constants.target_list, "rU") as f:
         for line in f:
             targets.add(line.replace("\n", ""))
 
-    with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt, open(COMBINED_SEQS) as f:
+    with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt, open(Constants.combined_seqs) as f:
         for record in SeqIO.parse(f, "fasta"):
             if str(record.id) in targets:
                 t.write(">{}\n{}\n".format(str(record.id), str(record.seq)))
@@ -141,7 +136,7 @@ def run_blast(directory, target_list):
 
 
 def get_bad_hits(primers):
-    
+
     good_hits = {}  # Key = seq name, Value = set of hit genomes
     mis_hits = {} # Key = seq name, Value = list of tuples: (mishit ID, mishit length)
     non_target_hits = {} # Key = seq name, Value = tuple: (hit ID, hit length)
@@ -162,7 +157,7 @@ def get_bad_hits(primers):
             # If sequence is in good hits, look for duplicates
             if fields[0] in good_hits:
 
-                # If sequence has hit the same genome in more than one spot                
+                # If sequence has hit the same genome in more than one spot
                 if fields[1] in good_hits[fields[0]]:
 
                     # Append the mis-hit ID and length to mis_hits
@@ -194,7 +189,7 @@ def get_bad_hits(primers):
         primer.max_mis_hit = max_mis_hits[primer.name]
         primer.max_non_target_hit = max_non_target_hits[primer.name]
 
-            
+
     return mis_hits, non_target_hits
 
 
@@ -209,7 +204,7 @@ class Primer:
         elif "RIGHT" in original_name:
             self.name = "{}_reverse".format(value)
             self.orientation = "reverse"
-        
+
         self.sequence = sequence
         self.value = int(value)
         self.length = len(sequence)
@@ -247,7 +242,7 @@ class Primer:
         final_name = "{}_{}".format(combined_name, tails[self.orientation][0])
         sequence_tail = tails[self.orientation][1] + self.sequence
         to_order = "{},{}".format(final_name, sequence_tail)
-        
+
         lst = [
             target,
             primer_name,

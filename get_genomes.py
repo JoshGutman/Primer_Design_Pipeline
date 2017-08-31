@@ -15,13 +15,8 @@ Is genome length of 500 a magic number? (Line 89)
 # Takes in target.fasta and directory with reference genomes
 def get_genomes(target, directory):
 
-    print(COMBINED_SEQS)
-    print(CONFIG_FILE)
-    print(REFERENCE_FASTA)
-    print(KEEP_FILES)
-
     directory = os.path.abspath(directory)
-        
+
     run_blast(target, "blastn")
     parse_blast_output(target)
 
@@ -38,7 +33,7 @@ def get_genomes(target, directory):
         # Remove blast database files
     for file in glob.glob("combined.seqs*"):
         os.remove(file)
-    
+
 
         # Remove target fasta variants (leave original target.fasta)
     target_name = os.path.splitext(target)[0]
@@ -48,7 +43,7 @@ def get_genomes(target, directory):
     '''
 
     return out
-    
+
 
 
 
@@ -57,11 +52,11 @@ def run_blast(target, blast_type):
 
     if blast_type == "blastn":
         reduced_name = os.path.basename(target).replace(".fasta", "")
-        subprocess.run('blastn -task blastn -query {} -db {} -out {}.blast.out -dust no -num_alignments 20000 -outfmt "7 std sseq"'.format(target, COMBINED_SEQS, reduced_name), shell=True)
+        subprocess.run('blastn -task blastn -query {} -db {} -out {}.blast.out -dust no -num_alignments 20000 -outfmt "7 std sseq"'.format(target, Constants.combined_seqs, reduced_name), shell=True)
     # Is tblastn needed?
     else:
         reduced_name = os.path.basename(target).replace(".pep", "")
-        subprocess.run('tblastn -query {} -db {} -out {}.blast.out -seg no -num_alignments 20000 -outfmt "7 std sseq"'.format(target, COMBINED_SEQS, reduced_name), shell=True)
+        subprocess.run('tblastn -query {} -db {} -out {}.blast.out -seg no -num_alignments 20000 -outfmt "7 std sseq"'.format(target, Constants.combined_seqs, reduced_name), shell=True)
 
 
 def parse_blast_output(target):
@@ -84,7 +79,7 @@ def parse_blast_output(target):
             if (len(item[1]) / largest) > .9:
                 outfile.write(">{}\n".format(item[0]))
                 outfile.write("{}\n".format(item[1]))
-        
+
 
 def parse_muscle_output():
 
@@ -93,5 +88,5 @@ def parse_muscle_output():
     with open("tmp_muscle_out.fasta") as f:
         for record in SeqIO.parse(f, "fasta"):
             out.append(str(record.seq))
-                    
+
     return out

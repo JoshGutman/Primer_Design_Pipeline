@@ -133,12 +133,11 @@ def output_conflicts(conflicts):
                 out.write("\n\n")
 
 
-def blast_all_primers(primer_fasta, combined_seqs):
+def blast_all_primers(primer_fasta):
     """BLAST all candidate primers against database of all reference genomes.
 
     Args:
         primer_fasta (str): Path to .fasta file with candidate primers.
-        combined_seqs (str): Path to .fasta file of BLAST database.
 
     Returns:
         None
@@ -146,4 +145,4 @@ def blast_all_primers(primer_fasta, combined_seqs):
         Creates file "primers.blast.out".
 
     """
-    subprocess.run("blastall -p blastn -i {} -d {} -m 8 -e 10 -o primers.blast.out".format(primer_fasta, COMBINED_SEQS), shell=True)
+    subprocess.run("blastall -p blastn -i {} -d {} -m 8 -e 10 -o primers.blast.out".format(primer_fasta, Constants.combined_seqs), shell=True)

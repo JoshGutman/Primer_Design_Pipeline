@@ -19,7 +19,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
     reference_fasta = os.path.abspath(reference_fasta)
 
     init(combined_seqs, target_list, reference_fasta, keep)
-    
+
     from get_tm import get_tm
     from get_primers import get_primers
     from get_genomes import get_genomes
@@ -27,25 +27,25 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
     from find_primer_conflicts import find_primer_conflicts, blast_all_primers
 
     targets = split_multifasta(target_file)
-    
-    
+
+
     for target in targets:
 
         dir_name = os.path.splitext(target)[0]
         os.mkdir(dir_name)
         subprocess.run("cp {} {}".format(target, dir_name), shell=True)
-        subprocess.run("cp {} {}".format(config_file, dir_name), shell=True)
+        subprocess.run("cp {} {}".format(Constants.config_file, dir_name), shell=True)
         os.chdir(dir_name)
-        
-        primers, mis_hits, non_target_hits = get_primers(config_file, target, directory, target_list, lower, upper)
+
+        primers, mis_hits, non_target_hits = get_primers(config_file, target, directory, lower, upper)
         genomes = get_genomes(target, directory)
         get_degens(primers, genomes, ignore)
 
-        blast_all_primers("alignment_blast_in.fasta", combined_seqs)
+        blast_all_primers("alignment_blast_in.fasta", Constants.combined_seqs)
         find_primer_conflicts("alignment_blast_in.fasta")
 
         combos = get_combos(primers, lower, upper, reference_fasta, project_dir)
-        
+
         output_candidate_primers(combos, target, [oligo_conc, na_conc, mg_conc])
 
         os.chdir("..")
@@ -62,12 +62,12 @@ def split_multifasta(fasta_file):
                 outfile.write(str(record.seq) + "\n")
 
     return out
-                              
+
 
 # Create fasta used to make blast database
 def combine_seqs(directory):
 
-    if os.path.isfile("combined.seqs"):
+    if os.path.isfile(Constants.combined_seqs):
         return
 
     with open("combined.seqs", "w") as f:
@@ -126,7 +126,7 @@ def output_candidate_primers(combos, target, tm_args):
 
                 outfile.write(combo.name + "\n")
                 outfile.write("--------------------------------------------------------------------------------------\n")
-                
+
                 # Name, mis-hit, non-target hit, degens, sequence, tm
                 outfile.write("Name\t\tMax mis-hit\t\tMax non-target hit\t\t# degens\t\tsequence\t\t[Min,Max,Avg] Tm\n")
                 outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(combo.forward.name,
@@ -172,14 +172,14 @@ class Combo:
         self.sequence = None
 
     def set_amplicon(self, reference_fasta, project_dir):
-        
+
         subprocess.run("{}/neben_linux_64 --primers {}:{} {} > amplicon".format(project_dir,
                                                                                 self.forward.sequence,
                                                                                 self.reverse.sequence,
                                                                                 REFERENCE_FASTA),shell=True)
         with open("amplicon", "rU") as f:
             out = f.readline()
-            
+
         if out == "":
             self.amplicon = "None found"
         else:
