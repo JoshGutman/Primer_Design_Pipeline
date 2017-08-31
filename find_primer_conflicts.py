@@ -145,4 +145,4 @@ def blast_all_primers(primer_fasta, combined_seqs):
         Creates file "primers.blast.out".
 
     """
-    subprocess.run("blastall -p blastn -i {} -d {} -m 8 -e 10 -o primers.blast.out".format(primer_fasta, combined_seqs), shell=True)
+    subprocess.run("blastall -p blastn -i {} -d {} -m 8 -e 10 -o primers.blast.out".format(primer_fasta, COMBINED_SEQS), shell=True)

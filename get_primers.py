@@ -122,11 +122,11 @@ def get_primers_from_primer3(primer3_output):
 def run_blast(directory, target_list):
 
     targets = set()
-    with open(target_list, "rU") as f:
+    with open(TARGET_LIST, "rU") as f:
         for line in f:
             targets.add(line.replace("\n", ""))
 
-    with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt, open("combined.seqs") as f:
+    with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt, open(COMBINED_SEQS) as f:
         for record in SeqIO.parse(f, "fasta"):
             if str(record.id) in targets:
                 t.write(">{}\n{}\n".format(str(record.id), str(record.seq)))

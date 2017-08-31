@@ -5,6 +5,7 @@ import sys
 import os
 from Bio import SeqIO
 
+from setup import *
 from get_tm import get_tm
 from get_primers import get_primers
 from get_genomes import get_genomes
@@ -13,23 +14,52 @@ from find_primer_conflicts import find_primer_conflicts, blast_all_primers
 
 
 # Driver
-def primer_design_pipeline(target, directory, config_file, target_list, reference_fasta, lower, upper, ignore, oligo_conc, na_conc, mg_conc, project_dir):
+def primer_design_pipeline(target_file, directory, config_file, target_list,
+                           reference_fasta, lower, upper, ignore, oligo_conc,
+                           na_conc, mg_conc, project_dir, keep):
 
-    combine_seqs(directory)
+    combined_seqs = combine_seqs(directory)
+    target_list = os.path.abspath(target_list)
+    reference_fasta = os.path.abspath(reference_fasta)
+
+    init(combined_seqs, target_list, reference_fasta, keep)
     
-    primers, mis_hits, non_target_hits = get_primers(config_file, target, directory, target_list, lower, upper)
-    genomes = get_genomes(target, directory)
-    get_degens(primers, genomes, ignore)
-
-    blast_all_primers("alignment_blast_in.fasta", "combined.seqs")
-    find_primer_conflicts("alignment_blast_in.fasta")
-
-    combos = get_combos(primers, lower, upper, reference_fasta, project_dir)
+    targets = split_multifasta(target_file)
     
-    output_candidate_primers(combos, target, [oligo_conc, na_conc, mg_conc])
+    
+    for target in targets:
 
-    print(primers)
+        dir_name = os.path.splitext(target)[0]
+        os.mkdir(dir_name)
+        subprocess.run("mv {} {}".format(target, dir_name), shell=True)
+        subprocess.run("cp {} {}".format(config_file, dir_name), shell=True)
+        os.chdir(dir_name)
+        
+        primers, mis_hits, non_target_hits = get_primers(config_file, target, directory, target_list, lower, upper)
+        genomes = get_genomes(target, directory)
+        get_degens(primers, genomes, ignore)
 
+        blast_all_primers("alignment_blast_in.fasta", combined_seqs)
+        find_primer_conflicts("alignment_blast_in.fasta")
+
+        combos = get_combos(primers, lower, upper, reference_fasta, project_dir)
+        
+        output_candidate_primers(combos, target, [oligo_conc, na_conc, mg_conc])
+
+
+
+def split_multifasta(fasta_file):
+    out = set()
+    with open(fasta_file) as infile:
+        for record in SeqIO.parse(f, "fasta"):
+            outfile_name = str(record.id) + ".fasta"
+            out.add(outfile_name)
+            with open(outfile_name, "w") as outfile:
+                outfile.write(">{}\n".format(str(record.id)))
+                outfile.write(str(record.seq) + "\n")
+
+    return out
+                              
 
 # Create fasta used to make blast database
 def combine_seqs(directory):
@@ -49,6 +79,7 @@ def combine_seqs(directory):
 
     subprocess.run("makeblastdb -in combined.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
 
+    return os.path.abspath("combined.seqs")
 
 
 def get_combos(primers, lower, upper, reference_fasta, project_dir):
@@ -142,7 +173,7 @@ class Combo:
         subprocess.run("{}/neben_linux_64 --primers {}:{} {} > amplicon".format(project_dir,
                                                                                 self.forward.sequence,
                                                                                 self.reverse.sequence,
-                                                                                reference_fasta),shell=True)
+                                                                                REFERENCE_FASTA),shell=True)
         with open("amplicon", "rU") as f:
             out = f.readline()
             
@@ -172,4 +203,4 @@ if __name__ == "__main__":
     project_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 
     args = parser.parse_args()
-    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore, args.oligo_conc, args.na_conc, args.mg_conc, project_dir)
+    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore, args.oligo_conc, args.na_conc, args.mg_conc, project_dir, args.keep)
