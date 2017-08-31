@@ -15,6 +15,11 @@ Is genome length of 500 a magic number? (Line 89)
 # Takes in target.fasta and directory with reference genomes
 def get_genomes(target, directory):
 
+    print(COMBINED_SEQS)
+    print(CONFIG_FILE)
+    print(REFERENCE_FASTA)
+    print(KEEP_FILES)
+
     directory = os.path.abspath(directory)
         
     run_blast(target, "blastn")
