@@ -65,8 +65,9 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
         os.chdir("..")
 
-
+    print(len(best_combos))
     for combo in best_combos:
+        print(len(combo))
         output_candidate_primers(combo, "best_primers.txt")
 
 
