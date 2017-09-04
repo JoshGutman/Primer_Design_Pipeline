@@ -108,7 +108,6 @@ def get_primers_from_primer3(primer3_output):
 
             if primer not in out:
                 out.append(primer)
-                Primer.add_primer(primer)
                 f.write(">{}\n{}\n".format(primer.name, primer.sequence))
 
     return out
