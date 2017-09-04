@@ -194,7 +194,6 @@ def get_bad_hits(primers):
 
 
 class Primer:
-    primers = []
 
     def __init__(self, original_name, sequence, value):
 
@@ -257,14 +256,6 @@ class Primer:
             str(len(amplicon) + 36) # amplicon length + UT length
             ]
         self.ordering_info = ";".join(lst)
-
-    @classmethod
-    def add_primer(cls, primer):
-        cls.primers.append(primer)
-
-    @classmethod
-    def sort_primers(cls, sort_func):
-        cls.primers.sort(key=sort_func)
 
     def __hash__(self):
         return hash(self.name + self.sequence)
