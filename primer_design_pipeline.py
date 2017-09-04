@@ -65,9 +65,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
         os.chdir("..")
 
-    print(len(best_combos))
     for combo in best_combos:
-        print(len(combo))
         output_candidate_primers(combo, "best_primers.txt")
 
 
@@ -162,7 +160,7 @@ def score_combos(primers, combos):
 
 def output_candidate_primers(combos, outfile_name):
 
-    with open(outfile_name, "w") as outfile:
+    with open(outfile_name, "a") as outfile:
 
         outfile.write(combos[0].target + "\n")
         outfile.write("======================================================================================================\n\n")
@@ -170,7 +168,7 @@ def output_candidate_primers(combos, outfile_name):
         for combo in combos:
 
             outfile.write(combo.name + "\n")
-            outfile.write("--------------------------------------------------------------------------------------\n")
+            outfile.write("------------------------------------------------------------------------------\n")
 
             # Name, mis-hit, non-target hit, degens, sequence, tm
             outfile.write("Name\t\tMax mis-hit\t\tMax non-target hit\t\t# degens\t\tsequence\t\t[Min,Max,Avg] Tm\n")
@@ -231,7 +229,8 @@ class Combo:
                                                                                 self.forward.sequence,
                                                                                 self.reverse.sequence,
                                                                                 Constants.reference_fasta),
-                                                                                shell=True)
+                       shell=True)
+        
         with open("amplicon", "rU") as f:
             out = f.readline()
 
