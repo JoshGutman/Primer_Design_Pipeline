@@ -48,7 +48,17 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
         combos = get_combos(primers, lower, upper, project_dir)
 
-        output_candidate_primers(combos, target, [oligo_conc, na_conc, mg_conc])
+        for combo in combos:
+            combo.forward.tm = get_tm(combo.forward.sequence, oligo_conc, na_conc, mg_conc)
+            combo.reverse.tm = get_tm(combo.reverse.sequence, oligo_conc, na_conc, mg_conc)
+
+            combo.forward.set_ordering_info(target, combo.amplicon)
+            combo.reverse.set_ordering_info(target, combo.amplicon)
+            
+        
+
+        output_candidate_primers(combos, "candidate_primers.txt")
+        choose_best_primers(combos, "../best_primers.txt")
 
         os.chdir("..")
 
@@ -88,7 +98,7 @@ def combine_seqs(directory):
 
 
 def get_combos(primers, lower, upper, project_dir):
-    out = set()
+    out = []
 
     forwards = []
     reverses = []
@@ -105,60 +115,90 @@ def get_combos(primers, lower, upper, project_dir):
             if lower <= combo_range <= upper:
                 temp_combo = Combo(f, r)
                 temp_combo.set_amplicon(project_dir)
-                out.add(temp_combo)
+                out.append(temp_combo)
 
     return out
 
 
 
+def score_combos(primers, combos):
+    def _add_score():
+        for i in range(len(Primer.primers)):
+            Primer.primers[i].score += i
 
-def output_candidate_primers(combos, target, tm_args):
+    # Number of degens
+    Primer.sort_primers(lambda primer: primer.num_degens)
+    _add_score()
 
-    with open("candidate_primers.txt", "w") as outfile:
+    # Max mis-hit ID
+    Primer.sort_primers(lambda primer: primer.max_mis_hit[0])
+    _add_score()
 
-        if len(combos) == 0:
-            # No combos were found in the specified range
-            #TODO
-            pass
+    # Max mis-hit length
+    primer.sort_primers(lambda primer: primer.max_mis_hit[1])
+    _add_score()
 
-        else:
-            for combo in combos:
-                combo.forward.tm = get_tm(combo.forward.sequence, *tm_args)
-                combo.reverse.tm = get_tm(combo.reverse.sequence, *tm_args)
+    # Max non-target hit ID
+    primer.sort_primers(lambda primer: primer.max_non_target_hit[0])
+    _add_score()
 
-                outfile.write(combo.name + "\n")
-                outfile.write("--------------------------------------------------------------------------------------\n")
+    # Max non-target hit length
+    primer.sort_primers(lambda primer: primer.max_non_target_hit[1])
+    _add_score()
 
-                # Name, mis-hit, non-target hit, degens, sequence, tm
-                outfile.write("Name\t\tMax mis-hit\t\tMax non-target hit\t\t# degens\t\tsequence\t\t[Min,Max,Avg] Tm\n")
-                outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(combo.forward.name,
-                                                                          combo.forward.max_mis_hit,
-                                                                          combo.forward.max_non_target_hit,
-                                                                          combo.forward.num_degens,
-                                                                          combo.forward.sequence,
-                                                                          combo.forward.tm))
-
-                outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(combo.reverse.name,
-                                                                          combo.reverse.max_mis_hit,
-                                                                          combo.reverse.max_non_target_hit,
-                                                                          combo.reverse.num_degens,
-                                                                          combo.reverse.sequence,
-                                                                          combo.reverse.tm))
-
-                combo.forward.set_ordering_info(target, combo.amplicon)
-                combo.reverse.set_ordering_info(target, combo.amplicon)
-
-                outfile.write("\nOrdering information:\n")
-                # Target, Primer, Combined_Name, Primer (5'-3'), final_name, UT + Sequnece, To order, Tm, Amplicon, Amplicon Length, Amplicon length + UT
-                outfile.write(combo.forward.ordering_info + "\n")
-                outfile.write(combo.reverse.ordering_info + "\n")
-
-                # Target, Amplicon
-                outfile.write("{},{}\n".format(target, combo.amplicon))
-
-                outfile.write("\n\n\n")
+    for combo in combos:
+        combo.score += combo.forward.score + combo.reverse.score
+        if combo.amplicon == "None found":
+            combo.score += 1000
 
 
+
+
+def output_candidate_primers(combos, outfile_name):
+
+    with open(outfile_name, "w") as outfile:
+
+        for combo in combos:
+
+            outfile.write(combo.name + "\n")
+            outfile.write("--------------------------------------------------------------------------------------\n")
+
+            # Name, mis-hit, non-target hit, degens, sequence, tm
+            outfile.write("Name\t\tMax mis-hit\t\tMax non-target hit\t\t# degens\t\tsequence\t\t[Min,Max,Avg] Tm\n")
+            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(combo.forward.name,
+                                                                      combo.forward.max_mis_hit,
+                                                                      combo.forward.max_non_target_hit,
+                                                                      combo.forward.num_degens,
+                                                                      combo.forward.sequence,
+                                                                      combo.forward.tm))
+
+            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(combo.reverse.name,
+                                                                      combo.reverse.max_mis_hit,
+                                                                      combo.reverse.max_non_target_hit,
+                                                                      combo.reverse.num_degens,
+                                                                      combo.reverse.sequence,
+                                                                      combo.reverse.tm))
+
+
+            outfile.write("\nOrdering information:\n")
+            # Target, Primer, Combined_Name, Primer (5'-3'), final_name, UT + Sequnece, To order, Tm, Amplicon, Amplicon Length, Amplicon length + UT
+            outfile.write(combo.forward.ordering_info + "\n")
+            outfile.write(combo.reverse.ordering_info + "\n")
+
+            # Target, Amplicon
+            outfile.write("{},{}\n".format(target, combo.amplicon))
+
+            outfile.write("\n\n\n")
+
+
+
+def choose_best_primers(combos, outfile):
+
+    combos.sort(key=lambda combo: combo.score)
+
+    output_candidate_primers(combos[0:3], outfile)
+            
+            
 
 
 class Combo:
@@ -172,13 +212,14 @@ class Combo:
         self.primer_name = None
         self.combined_name = None
         self.sequence = None
+        self.score = 0
 
     def set_amplicon(self, project_dir):
 
         subprocess.run("{}/neben_linux_64 --primers {}:{} {} > amplicon".format(project_dir,
                                                                                 self.forward.sequence,
                                                                                 self.reverse.sequence,
-                                                                                Constants.combined_seqs),
+                                                                                Constants.reference_fasta),
                                                                                 shell=True)
         with open("amplicon", "rU") as f:
             out = f.readline()
