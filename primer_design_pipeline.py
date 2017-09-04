@@ -163,8 +163,8 @@ def output_candidate_primers(combos, outfile_name):
 
     with open(outfile_name, "w") as outfile:
 
-        outfile.write(target + "\n")
-        outfile.write("======================================================================================\n\n")
+        outfile.write(combos[0].target + "\n")
+        outfile.write("======================================================================================================\n\n")
 
         for combo in combos:
 
@@ -198,7 +198,7 @@ def output_candidate_primers(combos, outfile_name):
 
             outfile.write("\n\n\n")
 
-        outfile.write("======================================================================================\n\n")
+        outfile.write("======================================================================================================\n\n")
 
 
 def choose_best_primers(combos):
