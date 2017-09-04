@@ -67,7 +67,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
 
     for combo in best_combos:
-        output_candidate_primers(combo, "../best_primers.txt")
+        output_candidate_primers(combo, "best_primers.txt")
 
 
 def split_multifasta(fasta_file):
