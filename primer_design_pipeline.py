@@ -55,10 +55,10 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
             combo.forward.set_ordering_info(target, combo.amplicon)
             combo.reverse.set_ordering_info(target, combo.amplicon)
             
-        
+        score_combos(primers, combos)
 
-        output_candidate_primers(combos, "candidate_primers.txt")
-        choose_best_primers(combos, "../best_primers.txt")
+        output_candidate_primers(combos, "candidate_primers.txt", target)
+        choose_best_primers(combos, "../best_primers.txt", target)
 
         os.chdir("..")
 
@@ -123,27 +123,27 @@ def get_combos(primers, lower, upper, project_dir):
 
 def score_combos(primers, combos):
     def _add_score():
-        for i in range(len(Primer.primers)):
-            Primer.primers[i].score += i
+        for i in range(len(primers)):
+            primers[i].score += i
 
     # Number of degens
-    Primer.sort_primers(lambda primer: primer.num_degens)
+    primers.sort(key=lambda primer: primer.num_degens)
     _add_score()
 
     # Max mis-hit ID
-    Primer.sort_primers(lambda primer: primer.max_mis_hit[0])
+    primers.sort(key=lambda primer: primer.max_mis_hit[0])
     _add_score()
 
     # Max mis-hit length
-    primer.sort_primers(lambda primer: primer.max_mis_hit[1])
+    primers.sort(key=lambda primer: primer.max_mis_hit[1])
     _add_score()
 
     # Max non-target hit ID
-    primer.sort_primers(lambda primer: primer.max_non_target_hit[0])
+    primers.sort(key=lambda primer: primer.max_non_target_hit[0])
     _add_score()
 
     # Max non-target hit length
-    primer.sort_primers(lambda primer: primer.max_non_target_hit[1])
+    primers.sort(key=lambda primer: primer.max_non_target_hit[1])
     _add_score()
 
     for combo in combos:
@@ -152,9 +152,7 @@ def score_combos(primers, combos):
             combo.score += 1000
 
 
-
-
-def output_candidate_primers(combos, outfile_name):
+def output_candidate_primers(combos, outfile_name, target):
 
     with open(outfile_name, "w") as outfile:
 
@@ -192,11 +190,11 @@ def output_candidate_primers(combos, outfile_name):
 
 
 
-def choose_best_primers(combos, outfile):
+def choose_best_primers(combos, outfile, target):
 
     combos.sort(key=lambda combo: combo.score)
 
-    output_candidate_primers(combos[0:3], outfile)
+    output_candidate_primers(combos[0:3], outfile, target)
             
             
 

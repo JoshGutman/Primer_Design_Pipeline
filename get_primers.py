@@ -97,7 +97,7 @@ def get_primers_from_primer3(primer3_output):
                 seqs[fields[0].replace("_SEQUENCE", "")] = fields[1].replace("\n", "")
 
     # Get the primer value and sequence from nums and seqs
-    out = set()
+    out = []
 
     with open("alignment_blast_in.fasta", "w") as f:
 
@@ -107,7 +107,7 @@ def get_primers_from_primer3(primer3_output):
                             nums[original_name])
 
             if primer not in out:
-                out.add(primer)
+                out.append(primer)
                 Primer.add_primer(primer)
                 f.write(">{}\n{}\n".format(primer.name, primer.sequence))
 
@@ -263,7 +263,7 @@ class Primer:
         cls.primers.append(primer)
 
     @classmethod
-    def sort_primers(cls, sort_func)):
+    def sort_primers(cls, sort_func):
         cls.primers.sort(key=sort_func)
 
     def __hash__(self):
