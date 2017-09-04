@@ -28,6 +28,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
     targets = split_multifasta(target_file)
 
+    best_combos = []
 
     for target in targets:
 
@@ -54,13 +55,19 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
             combo.forward.set_ordering_info(target, combo.amplicon)
             combo.reverse.set_ordering_info(target, combo.amplicon)
+
+            combo.target = target
             
         score_combos(primers, combos)
 
-        output_candidate_primers(combos, "candidate_primers.txt", target)
-        choose_best_primers(combos, "../best_primers.txt", target)
+        output_candidate_primers(combos, "candidate_primers.txt")
+        best_combos.append(choose_best_primers(combos))
 
         os.chdir("..")
+
+
+    for combo in best_combos:
+        output_candidate_primers(combo, "../best_primers.txt")
 
 
 def split_multifasta(fasta_file):
@@ -152,9 +159,12 @@ def score_combos(primers, combos):
             combo.score += 1000
 
 
-def output_candidate_primers(combos, outfile_name, target):
+def output_candidate_primers(combos, outfile_name):
 
     with open(outfile_name, "w") as outfile:
+
+        outfile.write(target + "\n")
+        outfile.write("======================================================================================\n\n")
 
         for combo in combos:
 
@@ -184,18 +194,19 @@ def output_candidate_primers(combos, outfile_name, target):
             outfile.write(combo.reverse.ordering_info + "\n")
 
             # Target, Amplicon
-            outfile.write("{},{}\n".format(target, combo.amplicon))
+            outfile.write("{},{}\n".format(combo.target, combo.amplicon))
 
             outfile.write("\n\n\n")
 
+        outfile.write("======================================================================================\n\n")
 
 
-def choose_best_primers(combos, outfile, target):
+def choose_best_primers(combos):
 
     combos.sort(key=lambda combo: combo.score)
 
-    output_candidate_primers(combos[0:3], outfile, target)
-            
+    #output_candidate_primers(combos[0:3], outfile, target)
+    return combos[0:3]
             
 
 
@@ -210,6 +221,7 @@ class Combo:
         self.primer_name = None
         self.combined_name = None
         self.sequence = None
+        self.target = None
         self.score = 0
 
     def set_amplicon(self, project_dir):
