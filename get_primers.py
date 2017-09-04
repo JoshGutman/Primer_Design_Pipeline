@@ -39,13 +39,6 @@ def get_primers(config_file, target, directory, lower, upper):
 
 
     """
-
-    print(Constants.combined_seqs)
-    print(Constants.config_file)
-    print(Constants.target_list)
-    print(Constants.reference_fasta)
-    print(Constants.keep_files)
-
     modify_input_file(config_file, target, lower, upper)
     subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
     primers = get_primers_from_primer3("primer3_out")
@@ -115,6 +108,7 @@ def get_primers_from_primer3(primer3_output):
 
             if primer not in out:
                 out.add(primer)
+                Primer.add_primer(primer)
                 f.write(">{}\n{}\n".format(primer.name, primer.sequence))
 
     return out
@@ -195,12 +189,12 @@ def get_bad_hits(primers):
         primer.max_mis_hit = max_mis_hits[primer.name]
         primer.max_non_target_hit = max_non_target_hits[primer.name]
 
-
     return mis_hits, non_target_hits
 
 
 
 class Primer:
+    primers = []
 
     def __init__(self, original_name, sequence, value):
 
@@ -217,10 +211,11 @@ class Primer:
         self.num_degens = self.count_degens()
 
         # To be determined at a later time during the program
-        self.max_mis_hit = None
-        self.max_non_target_hit = None
+        self.max_mis_hit = None, None
+        self.max_non_target_hit = None, None
         self.tm = None, None, None
         self.ordering_info = None
+        self.score = 0
 
     def set_sequence(self, new_seq):
         self.sequence = new_seq
@@ -262,6 +257,14 @@ class Primer:
             str(len(amplicon) + 36) # amplicon length + UT length
             ]
         self.ordering_info = ";".join(lst)
+
+    @classmethod
+    def add_primer(cls, primer):
+        cls.primers.append(primer)
+
+    @classmethod
+    def sort_primers(cls, sort_func)):
+        cls.primers.sort(key=sort_func)
 
     def __hash__(self):
         return hash(self.name + self.sequence)
