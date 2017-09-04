@@ -226,7 +226,7 @@ class Combo:
 
     def set_amplicon(self, project_dir):
 
-        subprocess.run("{}/neben_linux_64 --primers {}:{} {} > amplicon".format(project_dir,
+        subprocess.run("{}/neben_linux_64 -max 500 --primers {}:{} {} > amplicon".format(project_dir,
                                                                                 self.forward.sequence,
                                                                                 self.reverse.sequence,
                                                                                 Constants.reference_fasta),
