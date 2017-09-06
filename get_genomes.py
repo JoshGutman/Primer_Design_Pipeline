@@ -5,11 +5,6 @@ from Bio import SeqIO
 
 from setup import *
 
-"""
-Will tblastn ever be run?
-Is genome length of 500 a magic number? (Line 89)
-"""
-
 
 # Driver
 # Takes in target.fasta and directory with reference genomes
@@ -17,7 +12,7 @@ def get_genomes(target, directory):
 
     directory = os.path.abspath(directory)
 
-    run_blast(target, "blastn")
+    run_blast(target)
     parse_blast_output(target)
 
     subprocess.run("muscle -in tmp_muscle_in -out tmp_muscle_out.fasta > /dev/null 2>&1", shell=True)
@@ -48,16 +43,16 @@ def get_genomes(target, directory):
 
 
 # Run blast
-def run_blast(target, blast_type):
+def run_blast(target):
+    reduced_name = os.path.basename(target).replace(".fasta", "")
+    subprocess.run('blastn -task blastn -query {} -db {} -out {}.blast.out '
+                   '-dust no -num_alignments 20000 -outfmt "7 std sseq"'
+                   .format(target, Constants.combined_seqs, reduced_name),
+                   shell=True)
 
-    if blast_type == "blastn":
-        reduced_name = os.path.basename(target).replace(".fasta", "")
-        subprocess.run('blastn -task blastn -query {} -db {} -out {}.blast.out -dust no -num_alignments 20000 -outfmt "7 std sseq"'.format(target, Constants.combined_seqs, reduced_name), shell=True)
-    # Is tblastn needed?
-    else:
-        reduced_name = os.path.basename(target).replace(".pep", "")
-        subprocess.run('tblastn -query {} -db {} -out {}.blast.out -seg no -num_alignments 20000 -outfmt "7 std sseq"'.format(target, Constants.combined_seqs, reduced_name), shell=True)
-
+    subprocess.run("sort -u -k 2,2 {}.blast.out -o {}.blast.out"
+                   .format(reduced_name, reduced_name), shell=True)
+   
 
 def parse_blast_output(target):
 
