@@ -27,6 +27,11 @@ class Constants:
         cls.reference_fasta = reference
         cls.keep_files = keep
 
+class FileNames:
+
+    muscle_input = "tmp_muscle_in.fasta"
+    muscle_output = "tmp_muscle_out.fasta"
+
 
 def split_multifasta(multifasta):
     out = set()
