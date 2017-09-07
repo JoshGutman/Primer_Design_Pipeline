@@ -44,7 +44,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         primers, mis_hits, non_target_hits = get_primers(
             config_file, target, directory, lower, upper)
 
-        genomes = get_genomes(target, directory)
+        genomes = get_genomes(target)
         get_degens(primers, genomes, ignore)
 
         blast_all_primers("alignment_blast_in.fasta")
