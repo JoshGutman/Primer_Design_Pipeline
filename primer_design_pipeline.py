@@ -71,6 +71,8 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         output_combos(combo, "best_primers.txt")
 
 
+def remove_excess_files():
+    pass
 
 
 
