@@ -3,7 +3,7 @@ import os
 import glob
 from Bio import SeqIO
 
-from setup import *
+from setup import Constants, FileNames
 
 # Driver
 # Takes in primer3_template.txt, target.fasta, lower bound, upper bound
@@ -40,14 +40,13 @@ def get_primers(config_file, target, directory, lower, upper):
 
     """
     modify_input_file(config_file, target, lower, upper)
-    subprocess.run("primer3_core -output=primer3_out < config_modified.txt", shell=True)
-    primers = get_primers_from_primer3("primer3_out")
+    subprocess.run("primer3_core -output={} < {}".format(
+        FileNames.primer3_output, FileNames.modified_config_file),
+                   shell=True)
+    primers = get_primers_from_primer3()
 
     run_blast(directory)
     mis_hits, non_target_hits = get_bad_hits(primers)
-
-    os.remove("primer3_out")
-    os.remove("config_modified.txt")
 
     return (primers, mis_hits, non_target_hits)
 
@@ -62,7 +61,7 @@ def modify_input_file(config_file, target, lower, upper):
             sequence = str(record.seq)
 
     # Modify primer3_template.txt and save new version as config_modified.txt
-    with open(config_file, "U") as config_in, open("config_modified.txt", "w") as config_out:
+    with open(config_file, "U") as config_in, open(FileNames.modified_config_file, "w") as config_out:
         for line in config_in:
             if line.startswith("SEQUENCE_ID"):
                 config_out.write("SEQUENCE_ID={}\n".format(marker_name))
@@ -77,13 +76,13 @@ def modify_input_file(config_file, target, lower, upper):
 
 
 # Get the primers from primer3_core output
-def get_primers_from_primer3(primer3_output):
+def get_primers_from_primer3():
 
     # Final output = YY_forward: sequence
     nums = {}   # key = PRIMER_LEFT_X, value = YY
     seqs = {}   # key = PRIMER_LEFT_X, value = sequence
 
-    with open(primer3_output, "U") as infile:
+    with open(FileNames.primer3_output, "U") as infile:
         for line in infile:
 
             # PRIMER_LEFT_X or PRIMER_RIGHT_X
@@ -99,7 +98,7 @@ def get_primers_from_primer3(primer3_output):
     # Get the primer value and sequence from nums and seqs
     out = []
 
-    with open("alignment_blast_in.fasta", "w") as f:
+    with open(FileNames.conflict_blast_input, "w") as f:
 
         for original_name in seqs:
             primer = Primer(original_name,
@@ -120,18 +119,18 @@ def run_blast(directory):
         for line in f:
             targets.add(line.replace("\n", ""))
 
-    with open("target_database.seqs", "w") as t, open("non_target_database.seqs", "w") as nt, open(Constants.combined_seqs) as f:
+    with open(FileNames.target_db, "w") as t, open(FileNames.non_target_db, "w") as nt, open(Constants.combined_seqs) as f:
         for record in SeqIO.parse(f, "fasta"):
             if str(record.id) in targets:
                 t.write(">{}\n{}\n".format(str(record.id), str(record.seq)))
             else:
                 nt.write(">{}\n{}\n".format(str(record.id), str(record.seq)))
 
-    subprocess.run("makeblastdb -in target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
-    subprocess.run("makeblastdb -in non_target_database.seqs -dbtype nucl > /dev/null 2>&1", shell=True)
+    subprocess.run("makeblastdb -in {} -dbtype nucl > /dev/null 2>&1".format(FileNames.target_db), shell=True)
+    subprocess.run("makeblastdb -in {} -dbtype nucl > /dev/null 2>&1".format(FileNames.non_target_db), shell=True)
 
-    subprocess.run("blastn -task blastn -query alignment_blast_in.fasta -db target_database.seqs -num_alignments 2000 -outfmt 6 -out target_blast.out -evalue 10", shell=True)
-    subprocess.run("blastn -task blastn -query alignment_blast_in.fasta -db non_target_database.seqs -num_alignments 2000 -outfmt 6 -out non_target_blast.out -evalue 10", shell=True)
+    subprocess.run("blastn -task blastn -query {} -db {} -num_alignments 2000 -outfmt 6 -out {} -evalue 10".format(FileNames.conflict_blast_input, FileNames.target_db, FileNames.target_blast)shell=True)
+    subprocess.run("blastn -task blastn -query {} -db {} -num_alignments 2000 -outfmt 6 -out {} -evalue 10".format(FileNames.conflict_blast_input, FileNames.non_target_db, FileNames.non_target_blast), shell=True)
 
 
 def get_bad_hits(primers):
@@ -149,7 +148,7 @@ def get_bad_hits(primers):
         max_mis_hits[primer.name] = (0, 0)
         max_non_target_hits[primer.name] = (0, 0)
 
-    with open("target_blast.out", "rU") as f:
+    with open(FileNames.target_blast, "rU") as f:
         for line in f:
             fields = line.split()
 
@@ -174,7 +173,7 @@ def get_bad_hits(primers):
             else:
                 good_hits[fields[0]] = set()
 
-    with open("non_target_blast.out", "rU") as f:
+    with open(FileNames.non_target_blast, "rU") as f:
         for line in f:
             fields = line.split()
 
