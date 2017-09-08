@@ -66,6 +66,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         score_combos(primers, combos)
 
         output_combos(combos, "candidate_primers.txt")
+        output_ordering_info(combos)
         best_combos.append(choose_best_combos(combos))
 
         os.chdir("..")
