@@ -66,6 +66,9 @@ def output_combos(combos, outfile_name):
                       "========================================================"
                       "\n\n")
 
+        outfile.write("Name\tMax mis-hit\tMax non-target hit\t# degens"
+                      "\tsequence\t[Min,Max,Avg] Tm\n")
+
         for combo in combos:
 
             outfile.write(combo.name + "\n")
@@ -73,25 +76,26 @@ def output_combos(combos, outfile_name):
                           "--------------------------\n")
 
             # Name, mis-hit, non-target hit, degens, sequence, tm
-            outfile.write("Name\t\tMax mis-hit\t\tMax non-target hit\t\t# degens"
-                          "\t\tsequence\t\t[Min,Max,Avg] Tm\n")
-            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(
+            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\n".format(
                 combo.forward.name,
                 combo.forward.max_mis_hit,
                 combo.forward.max_non_target_hit,
                 combo.forward.num_degens,
                 combo.forward.sequence,
-                combo.forward.tm))
+                combo.forward.tm,
+                combo.score))
 
-            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(
+            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\n".format(
                 combo.reverse.name,
                 combo.reverse.max_mis_hit,
                 combo.reverse.max_non_target_hit,
                 combo.reverse.num_degens,
                 combo.reverse.sequence,
-                combo.reverse.tm))
+                combo.reverse.tm,
+                combo.score))
 
 
+            '''
             outfile.write("\nOrdering information:\n")
             # Target, Primer, Combined_Name, Primer (5'-3'), final_name,
             # UT+Sequnece, To order, Tm, Amplicon, Amplicon Length,
@@ -101,8 +105,20 @@ def output_combos(combos, outfile_name):
 
             # Target, Amplicon
             outfile.write("{},{}\n".format(combo.target, combo.amplicon))
+            '''
 
-            outfile.write("\n\n\n")
+            outfile.write("\n\n")
+
+
+def output_ordering_info(combos):
+    with open("ordering_info.txt", "w") as outfile:
+        outfile.write(combos[0].target + "\n\n")
+        for combo in combos:
+            outfile.write(combo.name)
+            outfile.write(combo.forward.ordering_info + "\n")
+            outfile.write(combo.reverse.ordering_info + "\n")
+            outfile.write("{}, {}\n".format(combo.target, combo.amplicon))
+            outfile.write("\n\n")
 
 
 def choose_best_combos(combos):
@@ -126,7 +142,7 @@ class Combo:
 
     def set_amplicon(self, project_dir):
 
-        subprocess.run("{}/neben_linux_64 -max 500"
+        subprocess.run("{}/neben_linux_64 -max 500 "
                        "--primers {}:{} {} > amplicon".format(
                            project_dir,
                            self.forward.sequence,
