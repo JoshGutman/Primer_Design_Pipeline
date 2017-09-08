@@ -88,6 +88,8 @@ def remove_excess_files(directories):
         os.remove(FileNames.neben_output)
         os.remove(FileNames.modified_config_file)
         os.remove(FileNames.primer3_output)
+        os.remove(FileNames.target_blast)
+        os.remove(FileNames.non_target_blast)
         os.remove(os.path.basename(Constants.config_file))
         os.remove(directory + ".fasta")
 
@@ -97,7 +99,7 @@ def remove_excess_files(directories):
     for directory in directories:
         os.remove(directory + ".fasta")
 
-    subprocess.remove("rm {}*".format(Constants.combined_seqs))
+    subprocess.run("rm {}*".format(Constants.combined_seqs))
         
 
 
