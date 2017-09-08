@@ -99,7 +99,7 @@ def remove_excess_files(directories):
     for directory in directories:
         os.remove(directory + ".fasta")
 
-    subprocess.run("rm {}*".format(Constants.combined_seqs))
+    subprocess.run("rm {}*".format(Constants.combined_seqs), shell=True)
         
 
 
