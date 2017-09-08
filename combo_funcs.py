@@ -58,24 +58,25 @@ def score_combos(primers, combos):
 def output_combos(combos, outfile_name):
 
     with open(outfile_name, "a") as outfile:
+
+        outfile.write("Name\tMax mis-hit\tMax non-target hit\t# degens"
+                      "\tsequence\t[Min,Max,Avg] Tm\tScore\n\n")
+        
         outfile.write("========================================================"
                       "========================================================"
-                      "\n")
+                      "=============================\n")
         outfile.write(combos[0].target + "\n")
         outfile.write("========================================================"
                       "========================================================"
-                      "\n\n")
-
-        outfile.write("Name\tMax mis-hit\tMax non-target hit\t# degens"
-                      "\tsequence\t[Min,Max,Avg] Tm\n")
+                      "=============================\n\n")
 
         for combo in combos:
 
             outfile.write(combo.name + "\n")
             outfile.write("----------------------------------------------------"
-                          "--------------------------\n")
+                          "----------------------------------------------------"
+                          "\n")
 
-            # Name, mis-hit, non-target hit, degens, sequence, tm
             outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\n".format(
                 combo.forward.name,
                 combo.forward.max_mis_hit,
@@ -94,27 +95,14 @@ def output_combos(combos, outfile_name):
                 combo.reverse.tm,
                 combo.score))
 
-
-            '''
-            outfile.write("\nOrdering information:\n")
-            # Target, Primer, Combined_Name, Primer (5'-3'), final_name,
-            # UT+Sequnece, To order, Tm, Amplicon, Amplicon Length,
-            # Amplicon length + UT
-            outfile.write(combo.forward.ordering_info + "\n")
-            outfile.write(combo.reverse.ordering_info + "\n")
-
-            # Target, Amplicon
-            outfile.write("{},{}\n".format(combo.target, combo.amplicon))
-            '''
-
             outfile.write("\n\n")
 
 
 def output_ordering_info(combos):
     with open("ordering_info.txt", "w") as outfile:
-        outfile.write(combos[0].target + "\n\n")
         for combo in combos:
-            outfile.write(combo.name)
+            outfile.write(combo.name + "\n")
+            outfile.write("-------------------------------------------------\n")
             outfile.write(combo.forward.ordering_info + "\n")
             outfile.write(combo.reverse.ordering_info + "\n")
             outfile.write("{}, {}\n".format(combo.target, combo.amplicon))
