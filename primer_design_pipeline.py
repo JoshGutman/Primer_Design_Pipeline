@@ -37,8 +37,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         config_file = os.path.abspath(os.path.basename(config_file))
 
 
-        primers, mis_hits, non_target_hits = get_primers(
-            config_file, target, directory, lower, upper)
+        primers, mis_hits, non_target_hits = get_primers(config_file, target, directory, lower, upper)
 
         genomes = get_genomes(target)
         get_degens(primers, genomes, ignore)

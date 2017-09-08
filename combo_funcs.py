@@ -135,7 +135,7 @@ class Combo:
                            project_dir,
                            self.forward.sequence,
                            self.reverse.sequence,
-                           Constants.reference_fasta
+                           Constants.reference_fasta,
                            FileNames.neben_output),
                        shell=True)
         
