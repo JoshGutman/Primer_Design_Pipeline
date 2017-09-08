@@ -99,7 +99,7 @@ def output_combos(combos, outfile_name):
 
 
 def output_ordering_info(combos):
-    with open("ordering_info.txt", "w") as outfile:
+    with open(FileNames.ordering_info, "w") as outfile:
         for combo in combos:
             outfile.write(combo.name + "\n")
             outfile.write("-------------------------------------------------\n")
@@ -131,14 +131,15 @@ class Combo:
     def set_amplicon(self, project_dir):
 
         subprocess.run("{}/neben_linux_64 -max 500 "
-                       "--primers {}:{} {} > amplicon".format(
+                       "--primers {}:{} {} > {}".format(
                            project_dir,
                            self.forward.sequence,
                            self.reverse.sequence,
-                           Constants.reference_fasta),
+                           Constants.reference_fasta
+                           FileNames.neben_output),
                        shell=True)
         
-        with open("amplicon", "rU") as f:
+        with open(FileNames.neben_output, "rU") as f:
             out = f.readline()
 
         if out == "":
