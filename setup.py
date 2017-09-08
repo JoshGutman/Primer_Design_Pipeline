@@ -27,10 +27,22 @@ class Constants:
         cls.reference_fasta = reference
         cls.keep_files = keep
 
+
 class FileNames:
 
     muscle_input = "tmp_muscle_in.fasta"
     muscle_output = "tmp_muscle_out.fasta"
+    conflict_blast_input = "alignment_blast_in.fasta"
+    neben_output = "amplicon.txt"
+    target_db = "target_database.seqs"
+    non_target_db = "non_target_database.seqs"
+    target_blast = "target_blast.out"
+    non_target_blast = "non_target_blast.out"
+    primer3_output = "primer3_out.txt"
+    modified_config_file = "config_modified.txt"
+    ordering_info = "ordering_info.txt"
+    
+    
 
 
 def split_multifasta(multifasta):
