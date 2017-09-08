@@ -25,11 +25,13 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
                    reference_fasta, keep)
 
     best_combos = []
-
+    new_dirs = []
     for target in targets:
 
         dir_name = os.path.splitext(target)[0]
         os.mkdir(dir_name)
+        new_dirs.append(dir_name)
+        
         subprocess.run("cp {} {}".format(target, dir_name), shell=True)
         subprocess.run("cp {} {}".format(Constants.config_file, dir_name),
                        shell=True)
@@ -69,9 +71,34 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
     for combo in best_combos:
         output_combos(combo, "best_primers.txt")
 
+    if not keep:
+        remove_excess_files(new_dirs)
 
-def remove_excess_files():
-    pass
+
+def remove_excess_files(directories):
+
+    # Get rid of all files in sub-directories
+    for directory in directories:
+        os.chdir(directory)
+        
+        subprocess.run("rm {}*".format(FileNames.conflict_blast_input), shell=True)
+        subprocess.run("rm {}*".format(FileNames.target_db), shell=True)
+        subprocess.run("rm {}*".format(FileNames.non_target_db), shell=True)
+
+        os.remove(FileNames.neben_output)
+        os.remove(FileNames.modified_config_file)
+        os.remove(FileNames.primer3_output)
+        os.remove(os.path.basename(Constants.config_file))
+        os.remove(directory + ".fasta")
+
+        os.chdir("..")
+
+    # Get rid of all .fasta files from multifasta in outer-most directory
+    for directory in directories:
+        os.remove(directory + ".fasta")
+
+    subprocess.remove("rm {}*".format(Constants.combined_seqs))
+        
 
 
 
