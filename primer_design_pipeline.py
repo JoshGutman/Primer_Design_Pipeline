@@ -17,16 +17,12 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
                            reference_fasta, lower, upper, ignore, oligo_conc,
                            na_conc, mg_conc, project_dir, keep):
 
-    #combined_seqs = combine_seqs(directory)
-
     target_list = os.path.abspath(target_list)
     reference_fasta = os.path.abspath(reference_fasta)
     config_file = os.path.abspath(config_file)
 
     targets = init(target_file, directory, config_file, target_list,
                    reference_fasta, keep)
-
-    #targets = split_multifasta(target_file)
 
     best_combos = []
 
@@ -85,10 +81,10 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--directory", help="[REQUIRED] Path to reference fastas", required=True)
     parser.add_argument("-c", "--config", help="[REQUIRED] Path to primer3 config file", required=True)
     parser.add_argument("-g", "--genomes", help="[REQUIRED] Path to .txt file with target genomes", required=True)
-    parser.add_argument("-r", "--reference", help="[REQUIRED] Path to amplicon reference genome .fasta", required=True)
+    parser.add_argument("-r", "--reference", help="Path to amplicon reference assembly .fasta", default="combined.seqs")
     parser.add_argument("-l", "--lower", help="Lower bound of amplicon size", type=int, default=150)
     parser.add_argument("-u", "--upper", help="Upper bound of amplicon size", type=int, default=250)
-    parser.add_argument("-i", "--ignore", help="Threshold percentage to consider degens", type=int, default=95)
+    parser.add_argument("-i", "--ignore", help="Threshold percentage to consider degens", type=float, default=98)
     parser.add_argument("-ol", "--oligo_conc", help="Oligo concentration (μM) for calculating Tm", type=float, default=.25)
     parser.add_argument("-na", "--na_conc", help="Na+ concentration (mM) for calculating Tm", type=float, default=50)
     parser.add_argument("-mg", "--mg_conc", help="Mg++ concentration (mM) for calculating Tm", type=float, default=0)
