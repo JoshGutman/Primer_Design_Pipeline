@@ -40,23 +40,9 @@ def get_genomes(target):
     subprocess.run("muscle -in {} -out {} > /dev/null 2>&1"
                    .format(FileNames.muscle_input, FileNames.muscle_output),
                    shell=True)
-    out = parse_muscle_output()
-
-    # Remove unneeded files if -k flag not set
-    if not Constants.keep_files:
-        # Remove muscle files
-        os.remove(FileNames.muscle_input)
-        os.remove(FileNames.muscle_output)
-
-        # Remove target fasta variants (leave original target.fasta)
-        os.remove("{}.blast.out".format(reduced_name))
-        os.remove("{}.for".format(reduced_name))
-        os.remove("{}.rev".format(reduced_name))
-
-    return out
+    return parse_muscle_output()
 
 
-# Run blast
 def run_blast(target, reduced_name):
     """BLAST target file against BLAST database and get rid of duplciates.
 
