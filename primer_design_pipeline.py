@@ -22,7 +22,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
     config_file = os.path.abspath(config_file)
 
     targets = init(target_file, directory, config_file, target_list,
-                   reference_fasta, keep)
+                   reference_fasta)
 
     best_combos = []
     new_dirs = []
@@ -77,13 +77,11 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
 def remove_excess_files(directories):
 
-    # Get rid of all files in sub-directories
+    # Get rid of files in sub-directories
     for directory in directories:
         os.chdir(directory)
         
         subprocess.run("rm {}*".format(FileNames.conflict_blast_input), shell=True)
-        subprocess.run("rm {}*".format(FileNames.target_db), shell=True)
-        subprocess.run("rm {}*".format(FileNames.non_target_db), shell=True)
 
         os.remove(FileNames.neben_output)
         os.remove(FileNames.modified_config_file)
@@ -100,6 +98,8 @@ def remove_excess_files(directories):
         os.remove(directory + ".fasta")
 
     subprocess.run("rm {}*".format(Constants.combined_seqs), shell=True)
+    subprocess.run("rm {}*".format(Constants.target_db), shell=True)
+    subprocess.run("rm {}*".format(Constants.non_target_db), shell=True)
         
 
 
