@@ -4,9 +4,10 @@ import subprocess
 from Bio import SeqIO
 
 
-def init(multifasta, directory, config, target, reference, keep):
+def init(multifasta, directory, config, target, reference):
     combined_seqs = combine_seqs(directory)
-    Constants.assign_values(combined_seqs, config, target, reference, keep)
+    target_db, non_target_db = make_hits_database(combined_seqs, target)
+    Constants.assign_values(combined_seqs, config, target, reference, target_db, non_target_db)
     targets = split_multifasta(multifasta)
     return targets
 
@@ -17,15 +18,17 @@ class Constants:
     config_file = None
     target_list = None
     reference_fasta = None
-    keep_files = None
+    target_db = None
+    non_target_db = None
 
     @classmethod
-    def assign_values(cls, combined, config, target, reference, keep):
+    def assign_values(cls, combined, config, target, reference, target_db, non_target_db):
         cls.combined_seqs = combined
         cls.config_file = config
         cls.target_list = target
         cls.reference_fasta = reference
-        cls.keep_files = keep
+        cls.target_db = target_db
+        cls.non_target_db = non_target_db
 
 
 class FileNames:
@@ -41,6 +44,7 @@ class FileNames:
     primer3_output = "primer3_out.txt"
     modified_config_file = "config_modified.txt"
     ordering_info = "ordering_info.txt"
+    combined_seqs = "combined.seqs"
     
     
 
@@ -54,7 +58,6 @@ def split_multifasta(multifasta):
             with open(outfile_name, "w") as outfile:
                 outfile.write(">{}\n".format(str(record.id)))
                 outfile.write(str(record.seq) + "\n")
-
     return out
 
 
@@ -77,3 +80,22 @@ def combine_seqs(directory):
                    shell=True)
 
     return os.path.abspath("combined.seqs")
+
+
+def make_hits_database(combined_seqs, target_list):
+    targets = set()
+    with open(target_list, "rU") as f:
+        for line in f:
+            targets.add(line.replace("\n", ""))
+
+    with open(FileNames.target_db, "w") as t, open(FileNames.non_target_db, "w") as nt, open(combined_seqs) as f:
+        for record in SeqIO.parse(f, "fasta"):
+            if str(record.id) in targets:
+                t.write(">{}\n{}\n".format(str(record.id), str(record.seq)))
+            else:
+                nt.write(">{}\n{}\n".format(str(record.id), str(record.seq)))
+
+    subprocess.run("makeblastdb -in {} -dbtype nucl > /dev/null 2>&1".format(FileNames.target_db), shell=True)
+    subprocess.run("makeblastdb -in {} -dbtype nucl > /dev/null 2>&1".format(FileNames.non_target_db), shell=True)
+
+    return os.path.abspath(FileNames.target_db), os.path.abspath(FileNames.non_target_db)
