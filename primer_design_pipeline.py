@@ -82,6 +82,7 @@ def remove_excess_files(directories):
         os.chdir(directory)
         
         subprocess.run("rm {}*".format(FileNames.conflict_blast_input), shell=True)
+        subprocess.run("rm {}*".format(directory)
 
         os.remove(FileNames.neben_output)
         os.remove(FileNames.modified_config_file)
@@ -89,7 +90,8 @@ def remove_excess_files(directories):
         os.remove(FileNames.target_blast)
         os.remove(FileNames.non_target_blast)
         os.remove(os.path.basename(Constants.config_file))
-        os.remove(directory + ".fasta")
+        os.remove(FileNames.muscle_input)
+        os.remove(FileNames.muscle_output)
 
         os.chdir("..")
 
