@@ -114,23 +114,8 @@ def get_primers_from_primer3():
 
 def run_blast(directory):
 
-    targets = set()
-    with open(Constants.target_list, "rU") as f:
-        for line in f:
-            targets.add(line.replace("\n", ""))
-
-    with open(FileNames.target_db, "w") as t, open(FileNames.non_target_db, "w") as nt, open(Constants.combined_seqs) as f:
-        for record in SeqIO.parse(f, "fasta"):
-            if str(record.id) in targets:
-                t.write(">{}\n{}\n".format(str(record.id), str(record.seq)))
-            else:
-                nt.write(">{}\n{}\n".format(str(record.id), str(record.seq)))
-
-    subprocess.run("makeblastdb -in {} -dbtype nucl > /dev/null 2>&1".format(FileNames.target_db), shell=True)
-    subprocess.run("makeblastdb -in {} -dbtype nucl > /dev/null 2>&1".format(FileNames.non_target_db), shell=True)
-
-    subprocess.run("blastn -task blastn -query {} -db {} -num_alignments 2000 -outfmt 6 -out {} -evalue 10".format(FileNames.conflict_blast_input, FileNames.target_db, FileNames.target_blast), shell=True)
-    subprocess.run("blastn -task blastn -query {} -db {} -num_alignments 2000 -outfmt 6 -out {} -evalue 10".format(FileNames.conflict_blast_input, FileNames.non_target_db, FileNames.non_target_blast), shell=True)
+    subprocess.run("blastn -task blastn -query {} -db {} -num_alignments 2000 -outfmt 6 -out {} -evalue 10".format(FileNames.conflict_blast_input, Constants.target_db, FileNames.target_blast), shell=True)
+    subprocess.run("blastn -task blastn -query {} -db {} -num_alignments 2000 -outfmt 6 -out {} -evalue 10".format(FileNames.conflict_blast_input, Constants.non_target_db, FileNames.non_target_blast), shell=True)
 
 
 def get_bad_hits(primers):
