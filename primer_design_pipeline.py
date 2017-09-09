@@ -82,7 +82,7 @@ def remove_excess_files(directories):
         os.chdir(directory)
         
         subprocess.run("rm {}*".format(FileNames.conflict_blast_input), shell=True)
-        subprocess.run("rm {}*".format(directory)
+        subprocess.run("rm {}*".format(directory), shell=True)
 
         os.remove(FileNames.neben_output)
         os.remove(FileNames.modified_config_file)
