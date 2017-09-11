@@ -111,8 +111,8 @@ def output_combos(combos, outfile_name):
     """
     with open(outfile_name, "a") as outfile:
 
-        outfile.write("Name\tMax mis-hit\tMax non-target hit\t# degens"
-                      "\tsequence\t[Min,Max,Avg] Tm\tAmplicon length\tScore\n\n")
+        outfile.write("Name,\tMax mis-hit,\tMax non-target hit,\t# degens,"
+                      "\tsequence,\t[Min,Max,Avg] Tm,\tAmplicon length,\tScore\n\n")
 
         outfile.write("========================================================"
                       "========================================================"
