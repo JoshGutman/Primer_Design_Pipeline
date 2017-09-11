@@ -20,15 +20,17 @@ class Constants:
     reference_fasta = None
     target_db = None
     non_target_db = None
+    project_dir = None
 
     @classmethod
-    def assign_values(cls, combined, config, target, reference, target_db, non_target_db):
+    def assign_values(cls, combined, config, target, reference, target_db, non_target_db, project_dir):
         cls.combined_seqs = combined
         cls.config_file = config
         cls.target_list = target
         cls.reference_fasta = reference
         cls.target_db = target_db
         cls.non_target_db = non_target_db
+        cls.project_dir = project_dir
 
 
 class FileNames:
