@@ -4,10 +4,10 @@ import subprocess
 from Bio import SeqIO
 
 
-def init(multifasta, directory, config, target, reference):
+def init(multifasta, directory, config, target, reference, project_dir):
     combined_seqs = combine_seqs(directory)
     target_db, non_target_db = make_hits_database(combined_seqs, target)
-    Constants.assign_values(combined_seqs, config, target, reference, target_db, non_target_db)
+    Constants.assign_values(combined_seqs, config, target, reference, target_db, non_target_db, project_dir)
     targets = split_multifasta(multifasta)
     return targets
 
