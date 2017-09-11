@@ -140,7 +140,7 @@ def output_combos(combos, outfile_name):
                           "----------------------------------------------------"
                           "\n")
 
-            _write_primer(combo, combo.foward)
+            _write_primer(combo, combo.forward)
             _write_primer(combo, combo.reverse)
             outfile.write("\n\n")
 
