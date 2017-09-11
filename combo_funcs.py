@@ -123,7 +123,7 @@ def output_combos(combos, outfile_name):
                       "=============================\n\n")
 
         def _write_primer(combo, primer):
-            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\n".format(
+            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(
                 primer.name,
                 primer.max_mis_hit,
                 primer.max_non_target_hit,
