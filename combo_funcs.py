@@ -112,7 +112,7 @@ def output_combos(combos, outfile_name):
     with open(outfile_name, "a") as outfile:
 
         outfile.write("Name\tMax mis-hit\tMax non-target hit\t# degens"
-                      "\tsequence\t[Min,Max,Avg] Tm\tScore\n\n")
+                      "\tsequence\t[Min,Max,Avg] Tm\tAmplicon length\tScore\n\n")
 
         outfile.write("========================================================"
                       "========================================================"
@@ -122,6 +122,17 @@ def output_combos(combos, outfile_name):
                       "========================================================"
                       "=============================\n\n")
 
+        def _write_primer(combo, primer):
+            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\n".format(
+                primer.name,
+                primer.max_mis_hit,
+                primer.max_non_target_hit,
+                primer.num_degens,
+                primer.sequence,
+                primer.tm,
+                len(combo.amplicon),
+                combo.score))
+
         for combo in combos:
 
             outfile.write(combo.name + "\n")
@@ -129,24 +140,8 @@ def output_combos(combos, outfile_name):
                           "----------------------------------------------------"
                           "\n")
 
-            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\n".format(
-                combo.forward.name,
-                combo.forward.max_mis_hit,
-                combo.forward.max_non_target_hit,
-                combo.forward.num_degens,
-                combo.forward.sequence,
-                combo.forward.tm,
-                combo.score))
-
-            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}\n".format(
-                combo.reverse.name,
-                combo.reverse.max_mis_hit,
-                combo.reverse.max_non_target_hit,
-                combo.reverse.num_degens,
-                combo.reverse.sequence,
-                combo.reverse.tm,
-                combo.score))
-
+            _write_primer(combo, combo.foward)
+            _write_primer(combo, combo.reverse)
             outfile.write("\n\n")
 
 
@@ -166,10 +161,10 @@ def output_ordering_info(combos):
         for combo in combos:
             outfile.write(combo.name + "\n")
             outfile.write("-------------------------------------------------\n")
-            outfile.write(combo.forward.ordering_info + "\n")
-            outfile.write(combo.reverse.ordering_info + "\n")
+            outfile.write(combo.forward.ordering_info + "\n\n")
+            outfile.write(combo.reverse.ordering_info + "\n\n")
             outfile.write("{}, {}\n".format(combo.target, combo.amplicon))
-            outfile.write("\n\n")
+            outfile.write("\n\n\n")
 
 
 def choose_best_combos(combos):
