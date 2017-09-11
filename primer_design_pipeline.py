@@ -22,7 +22,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
     config_file = os.path.abspath(config_file)
 
     targets = init(target_file, directory, config_file, target_list,
-                   reference_fasta)
+                   reference_fasta, project_dir)
 
     best_combos = []
     new_dirs = []
@@ -47,7 +47,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         blast_all_primers("alignment_blast_in.fasta")
         find_primer_conflicts("alignment_blast_in.fasta")
 
-        combos = get_combos(primers, lower, upper, project_dir)
+        combos = get_combos(primers, lower, upper)
 
         for combo in combos:
             combo.forward.tm = get_tm(combo.forward.sequence,
