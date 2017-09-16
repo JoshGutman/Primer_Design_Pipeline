@@ -3,7 +3,7 @@ import csv
 import io
 import argparse
 
-#from combo_funcs import Combo
+from Primer_Design_Pipeline.combo_funcs import Combo
 
 COLUMNS = ["Type of Target", "Target", "Primer", "Combined_name",
            "Primer (5'-3')", "Final_name", "UT + Sequence", "To order", "Tm",
