@@ -213,6 +213,8 @@ class Primer:
 
     def set_ordering_info(self, target, amplicon):
 
+        self.ordering_info = {}
+
         ut1 = "ACCCAACTGAATGGAGC"
         ut2 = "ACGCACTTGACTTGTCTTC"
 
@@ -226,6 +228,15 @@ class Primer:
         sequence_tail = tails[self.orientation][1] + self.sequence
         to_order = "{},{}".format(final_name, sequence_tail)
 
+        self.ordering_info["target"] = target
+        self.ordering_info["primer_name"] = primer_name
+        self.ordering_info["combined_name"] = combined_name
+        self.ordering_info["final_name"] = final_name
+        self.ordering_info["sequence_tail"] = sequence_tail
+        self.ordering_info["to_order"] = to_order
+        self.ordering_info["tm"] = str(self.tm[2])
+
+        '''
         lst = [
             target,
             primer_name,
@@ -239,6 +250,7 @@ class Primer:
             str(len(amplicon) + 36) # amplicon length + UT length
             ]
         self.ordering_info = ";".join(lst)
+        '''
 
     def __hash__(self):
         return hash(self.name + self.sequence)

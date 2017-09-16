@@ -123,6 +123,10 @@ def output_combos(combos, outfile_name):
                       "=============================\n\n")
 
         def _write_primer(combo, primer):
+            if combo.amplicon == "None found":
+                amp_len = 0
+            else:
+                amp_len = len(combo.amplicon)
             outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(
                 primer.name,
                 primer.max_mis_hit,
@@ -130,12 +134,12 @@ def output_combos(combos, outfile_name):
                 primer.num_degens,
                 primer.sequence,
                 primer.tm,
-                len(combo.amplicon),
+                amp_len,
                 combo.score))
 
         for combo in combos:
 
-            outfile.write(combo.name + "\n")
+            outfile.write("{}. {}\n".format(combo.id, combo.name))
             outfile.write("----------------------------------------------------"
                           "----------------------------------------------------"
                           "\n")
@@ -143,6 +147,85 @@ def output_combos(combos, outfile_name):
             _write_primer(combo, combo.forward)
             _write_primer(combo, combo.reverse)
             outfile.write("\n\n")
+
+
+def format_combos(combos):
+
+    def _get_max_len(values):
+        return max(len(value) for value in values) + 2
+
+    '''
+    name_list = ["Name"]
+    mis_hit_list = ["Max mis-hit"]
+    non_target_list = ["Max non-target hit"]
+    degen_list = ["# degens"]
+    sequence_list = ["sequence"]
+    tm_list = ["[Min,Max,Avg] Tm"]
+    amp_list = ["Amplicon length"]
+    score_list = ["Score"]
+
+    for combo in combos:
+        name_list.append(combo.forward.name)
+        name_list.append(combo.reverse.name)
+
+        mis_hit_list.append(str(combo.forward.mis_hit))
+        mis_hit_list.append(str(combo.reverse.mis_hit))
+
+        non_target_list.append(str(combo.forward.non_target_hit))
+        non_target_list.append(str(combo.reverse.non_target_hit))
+
+        degen_list.append(str(combo.forward.num_degens))
+        degen_list.append(str(combo.reverse.num_degens))
+
+        tm_list.append(str(combo.forward.tm))
+        tm_list.append(str(combo.reverse.tm))
+
+        if combo.amplicon == "None found":
+            amp_list = 0
+        else:
+            amp_list = len(combo.amplicon)
+        amp_list.append(str(amp_list))
+
+        score_list.append(str(combo.score))
+
+    name_len = _get_max_len(name_list)
+    mis_hit_len = _get_max_len(mis_hit_list)
+    non_target_len = _get_max_len(non_target_list)
+    degen_len = _get_max_len(degen_list)
+    sequence_len = _get_max_len(sequence_list)
+    tm_len = _get_max_len(tm_list)
+    amp_len = _get_max_len(amp_list)
+    score_len = _get_max_len(score_list)
+    '''
+
+    attribute_list = []
+    for combo in combos:
+        attribute_list.append(combo.forward.name)
+        attribute_list.append(combo.reverse.name)
+        attribute_list.append(str(combo.forward.max_mis_hit))
+        attribute_list.append(str(combo.reverse.max_mis_hit))
+        attribute_list.append(str(combo.forward.max_non_target_hit))
+        attribute_list.append(str(combo.reverse.max_non_target_hit))
+        attribute_list.append(str(combo.forward.num_degens))
+        attribute_list.append(str(combo.reverse.num_degens))
+        attribute_list.append(str(combo.forward.tm))
+        attribute_list.append(str(combo.reverse.tm))
+        attribute_list.append(str(len(combo.amplicon)))
+        attribute_list.append(str(combo.score))
+
+    max_len = max(len(attribute) for attribute in attribute_list) + 2
+
+    def format_string(attribute):
+        out = attribute
+        while len(out) < max_len:
+            out += " "
+        return out
+
+    #TODO
+    # Add a display_info instance variable to Primer class.
+    #   > Just one string that is formattted for that primer
+    # In output_primers, just write forward.display_info \n reverse.display_info
+
 
 
 def output_ordering_info(combos):
@@ -189,6 +272,8 @@ class Combo:
 
     """
 
+    combo_id = 1
+
     def __init__(self, forward_primer, reverse_primer):
         """Creates a Combo object sans amplicon, ordering info, and score.
 
@@ -199,6 +284,9 @@ class Combo:
                 orientation.
 
         """
+        self.id = Combo.combo_id
+        Combo.increment_combo_id()
+        
         self.forward = forward_primer
         self.reverse = reverse_primer
         self.name = "{} - {}".format(self.forward.name, self.reverse.name)
@@ -209,6 +297,10 @@ class Combo:
         self.sequence = None
         self.target = None
         self.score = 0
+
+    @classmethod
+    def increment_combo_id(cls):
+        cls.combo_id += 1
 
     def set_amplicon(self):
         """Sets the amplicon of a Combo object.
@@ -247,3 +339,29 @@ class Combo:
             self.amplicon = "None found"
         else:
             self.amplicon = out.split()[3]
+
+    def get_order_info(self):
+        """Gets the ordering info for the forward and reverse primers.
+
+        Gets the ordering info for the forward and reverse primers in the form
+        of a list. Can be used to write the ordering info to a csv file.
+
+        Args:
+            None.
+
+        Returns:
+            :obj:`list` of :obj:`list` of :obj:`str`: A list of the ordering
+            information for the forward and reverse primers in the combo.
+
+        """
+        out = []
+        for primer in [self.forward, self.reverse]:
+            out.append(["", self.target, primer.ordering_info["primer_name"],
+                        primer.ordering_info["combined_name"], primer.sequence,
+                        primer.ordering_info["final_name"],
+                        primer.ordering_info["sequence_tail"],
+                        primer.ordering_info["to_order"],
+                        primer.ordering_info["tm"],
+                        self.amplicon, str(len(self.amplicon)),
+                        str(len(self.amplicon)+36), "", "", "", ""])
+        return out

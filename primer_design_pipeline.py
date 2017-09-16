@@ -1,5 +1,6 @@
 import subprocess
 import argparse
+import pickle
 import sys
 import os
 
@@ -24,6 +25,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
     targets = init(target_file, directory, config_file, target_list,
                    reference_fasta, project_dir)
 
+    all_combos = []
     best_combos = []
     new_dirs = []
     for target in targets:
@@ -59,17 +61,20 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
             combo.reverse.set_ordering_info(target, combo.amplicon)
 
             combo.target = target
+            all_combos.append(combo)
 
         score_combos(primers, combos)
 
         output_combos(combos, "candidate_primers.txt")
-        output_ordering_info(combos)
+        #output_ordering_info(combos)
         best_combos.append(choose_best_combos(combos))
 
         os.chdir("..")
 
     for combo in best_combos:
         output_combos(combo, "best_primers.txt")
+
+    pickle_combos(all_combos)
 
     if not keep:
         remove_excess_files(new_dirs)
@@ -104,6 +109,9 @@ def remove_excess_files(directories):
     subprocess.run("rm {}*".format(Constants.non_target_db), shell=True)
         
 
+def pickle_combos(all_combos):
+    with open(FileNames.pickled_combos, "wb") as outfile:
+        pickle.dump(all_combos, outfile)
 
 
 if __name__ == "__main__":

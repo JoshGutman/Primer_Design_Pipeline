@@ -47,6 +47,7 @@ class FileNames:
     modified_config_file = "config_modified.txt"
     ordering_info = "ordering_info.txt"
     combined_seqs = "combined.seqs"
+    pickled_combos = "combos.pickle"
     
     
 
