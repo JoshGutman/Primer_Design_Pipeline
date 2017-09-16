@@ -87,4 +87,4 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--ids", help="[REQUIRED] Comma-delimited IDs of primers to output", required=True)
 
     args = parser.parse_args()
-    #combos_to_csv(
+    combos_to_csv(args.output, args.ids)
