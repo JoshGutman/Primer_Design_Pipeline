@@ -6,29 +6,19 @@ import io
 import os
 
 
-
-COLUMNS = ["Type of Target", "Target", "Primer", "Combined_name",
-           "Primer (5'-3')", "Final_name", "UT + Sequence", "To order", "Tm",
-           "Amplicon length", "Amplicon Length + UT", "SNP position",
-           "SNP call", "2nd SNP call", "OutGroup SNP call"]
-
-EMPTY_ROW = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
-
-PICKLED_COMBOS = "combos.pickle"
-
-
-def combos_to_csv(file, id_str):
+def combos_to_csv(outfile, infile, id_str):
     ids = [int(i) for i in id_str.split(",")]
-    combos = unpickle_combos()
+    combos = unpickle_combos(infile)
     for combo_id in ids:
         combo = get_combo_from_id(combos, combo_id)
         if combo is not None:
-            output_to_csv(file, combo.get_order_info, combo.get_amplicon_info)
+            order_info = combo.get_order_info()
+            amp_info = combo.get_amplicon_info()
+            output_to_csv(outfile, order_info, amp_info)
 
 
-def unpickle_combos():
-    global PICKLED_COMBOS
-    with open(PICKLED_COMBOS, "rb") as infile:
+def unpickle_combos(file):
+    with open(file, "rb") as infile:
         combos = pickle.load(infile)
     return combos
 
@@ -41,16 +31,21 @@ def get_combo_from_id(combos, combo_id):
 
 def output_to_csv(file, order_info, amplicon_info):
     rows = read_csv(file)
-
+    
     # If file is empty
-    if len(rows[0]) == 0:
-        global COLUMNS
-        global EMPTY_ROW
-        write_csv(file, COLUMNS)
-        write_csv(file, EMPTY_ROW)
+    if not rows:
+        columns = ["Type of Target", "Target", "Primer", "Combined_name",
+                   "Primer (5'-3')", "Final_name", "UT + Sequence", "To order",
+                   "Tm","Amplicon", "Amplicon length", "Amplicon Length + UT",
+                   "SNP position", "SNP call", "2nd SNP call",
+                   "OutGroup SNP call"]
+        empty_row = ["" for item in columns]
+        rows.append(columns)
+        rows.append(empty_row)
     
     index = find_empty_row(rows)
-    rows.insert(index, order_info)
+    rows.insert(index, order_info[0])
+    rows.insert(index+1, order_info[1])
     rows.append(amplicon_info)
     write_csv(file, rows)
 
@@ -63,17 +58,20 @@ def write_csv(file, data):
 
 
 def read_csv(file):
-    with open(file, newline="") as infile:
-        reader = csv.reader(infile)
-        return list(reader)
+    try:
+        with open(file, newline="") as infile:
+            reader = csv.reader(infile)
+            return list(reader)
+    except FileNotFoundError:
+        return []
 
 
 def find_empty_row(data):
-    global EMPTY_ROW
     for index, row in enumerate(data):
-        if row == EMPTY_ROW:
-            break
-    return index
+        for item in row:
+            if item != "":
+                return index
+    return len(data)
 
 
 def csv_to_str(data):
@@ -85,15 +83,17 @@ def csv_to_str(data):
 
 if __name__ == "__main__":
 
+    
     # Python paths are annoying
     if __package__ is None:
-        sys.path.append(os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__))))
-    from Primer_Design_Pipeline.combo_funcs import Combo
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from Primer_Design_Pipeline import combo_funcs
+    
     
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--output", help="[REQUIRED] Path to output .csv file", required=True)
-    parser.add_argument("-i", "--ids", help="[REQUIRED] Comma-delimited IDs of primers to output", required=True)
+    parser.add_argument("-p", "--primers", help="[REQUIRED] Comma-delimited IDs of primers to output", required=True)
+    parser.add_argument("-i", "--input", help="Path to input .pickle file", default="combos.pickle")
 
     args = parser.parse_args()
-    combos_to_csv(args.output, args.ids)
+    combos_to_csv(args.output, args.input, args.primers)
