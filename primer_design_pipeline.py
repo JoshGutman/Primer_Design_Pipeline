@@ -74,7 +74,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
     for combo in best_combos:
         output_combos(combo, "best_primers.txt")
 
-    pickle_combos(all_combos, fix_imports=False)
+    pickle_combos(all_combos)
 
     if not keep:
         remove_excess_files(new_dirs)
@@ -111,7 +111,7 @@ def remove_excess_files(directories):
 
 def pickle_combos(all_combos):
     with open(FileNames.pickled_combos, "wb") as outfile:
-        pickle.dump(all_combos, outfile)
+        pickle.dump(all_combos, outfile, fix_imports=False)
 
 
 if __name__ == "__main__":
