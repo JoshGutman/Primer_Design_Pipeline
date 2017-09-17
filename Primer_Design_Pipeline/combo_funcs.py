@@ -323,7 +323,7 @@ class Combo:
             If no amplicon is found, "None found" is assigned instead.
 
         """
-        subprocess.run("{}/neben_linux_64 -max 500 "
+        subprocess.run("{}/Primer_Design_Pipeline/neben_linux_64 -max 500 "
                        "--primers {}:{} {} > {}".format(
                            Constants.project_dir,
                            self.forward.sequence,
@@ -365,3 +365,7 @@ class Combo:
                         self.amplicon, str(len(self.amplicon)),
                         str(len(self.amplicon)+36), "", "", "", ""])
         return out
+
+    def get_amplicon_info(self):
+        return [self.target, self.amplicon]
+
