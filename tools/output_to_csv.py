@@ -1,9 +1,11 @@
+import argparse
 import pickle
 import csv
+import sys
 import io
-import argparse
+import os
 
-from Primer_Design_Pipeline.combo_funcs import Combo
+
 
 COLUMNS = ["Type of Target", "Target", "Primer", "Combined_name",
            "Primer (5'-3')", "Final_name", "UT + Sequence", "To order", "Tm",
@@ -82,6 +84,13 @@ def csv_to_str(data):
 
 
 if __name__ == "__main__":
+
+    # Python paths are annoying
+    if __package__ is None:
+        sys.path.append(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))))
+    from Primer_Design_Pipeline.combo_funcs import Combo
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--output", help="[REQUIRED] Path to output .csv file", required=True)
     parser.add_argument("-i", "--ids", help="[REQUIRED] Comma-delimited IDs of primers to output", required=True)
