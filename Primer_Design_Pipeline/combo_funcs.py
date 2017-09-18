@@ -142,9 +142,11 @@ def output_combos(combos, outfile_name):
                 combo.score))
         '''
 
+        format_combos(combos)
+
         for combo in combos:
 
-            outfile.write("{}. {}\n".format(combo.id, combo.name))
+            outfile.write("{}.   {}\n".format(combo.id, combo.name))
             outfile.write("----------------------------------------------------"
                           "----------------------------------------------------"
                           "\n")
@@ -235,11 +237,6 @@ def format_combos(combos):
             for attribute in attributes:
                 out += _format_string(attribute)
             primer.display_info = out
-
-    #TODO
-    # Add a display_info instance variable to Primer class.
-    #   > Just one string that is formattted for that primer
-    # In output_primers, just write forward.display_info \n reverse.display_info
 
 
 def output_ordering_info(combos):
