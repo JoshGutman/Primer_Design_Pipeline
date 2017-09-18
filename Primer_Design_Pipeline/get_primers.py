@@ -197,6 +197,7 @@ class Primer:
         self.max_non_target_hit = None, None
         self.tm = None, None, None
         self.ordering_info = None
+        self.display_info = None
         self.score = 0
 
     def set_sequence(self, new_seq):
