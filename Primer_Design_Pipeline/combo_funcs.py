@@ -111,17 +111,21 @@ def output_combos(combos, outfile_name):
     """
     with open(outfile_name, "a") as outfile:
 
-        outfile.write("Name,\tMax mis-hit,\tMax non-target hit,\t# degens,"
-                      "\tsequence,\t[Min,Max,Avg] Tm,\tAmplicon length,\tScore\n\n")
+        if outfile.tell() == 0:
+            outfile.write("Key:\n")
+            outfile.write("Name,\tMax mis-hit,\tMax non-target hit,\t# degens,"
+                          "\tsequence,\t[Min,Max,Avg] Tm,\tAmplicon length,"
+                          "\tScore\n\n\n")
 
-        outfile.write("========================================================"
+        outfile.write("\n======================================================"
                       "========================================================"
-                      "=============================\n")
+                      "===============================\n")
         outfile.write(combos[0].target + "\n")
         outfile.write("========================================================"
                       "========================================================"
                       "=============================\n\n")
 
+        '''
         def _write_primer(combo, primer):
             if combo.amplicon == "None found":
                 amp_len = 0
@@ -136,6 +140,7 @@ def output_combos(combos, outfile_name):
                 primer.tm,
                 amp_len,
                 combo.score))
+        '''
 
         for combo in combos:
 
@@ -144,15 +149,14 @@ def output_combos(combos, outfile_name):
                           "----------------------------------------------------"
                           "\n")
 
-            _write_primer(combo, combo.forward)
-            _write_primer(combo, combo.reverse)
+            #_write_primer(combo, combo.forward)
+            #_write_primer(combo, combo.reverse)
+            outfile.write(combo.forward.display_info)
+            outfile.write(combo.reverse.display_info)
             outfile.write("\n\n")
 
 
 def format_combos(combos):
-
-    def _get_max_len(values):
-        return max(len(value) for value in values) + 2
 
     '''
     name_list = ["Name"]
@@ -210,22 +214,32 @@ def format_combos(combos):
         attribute_list.append(str(combo.reverse.num_degens))
         attribute_list.append(str(combo.forward.tm))
         attribute_list.append(str(combo.reverse.tm))
-        attribute_list.append(str(len(combo.amplicon)))
+        attribute_list.append(str(combo.amp_len))
         attribute_list.append(str(combo.score))
 
     max_len = max(len(attribute) for attribute in attribute_list) + 2
 
-    def format_string(attribute):
+    def _format_string(attribute):
         out = attribute
         while len(out) < max_len:
             out += " "
         return out
 
+    for combo in combos:
+        for primer in [combo.forward, combo.reverse]:
+            attributes = [primer.name, primer.max_mis_hit,
+                          primer.max_non_target_hit, primer.num_degens,
+                          str(primer.tm), str(combo.amp_len),
+                          str(combo.score)]
+            out = ""
+            for attribute in attributes:
+                out += _format_string(attribute)
+            primer.display_info = out
+
     #TODO
     # Add a display_info instance variable to Primer class.
     #   > Just one string that is formattted for that primer
     # In output_primers, just write forward.display_info \n reverse.display_info
-
 
 
 def output_ordering_info(combos):
@@ -291,6 +305,7 @@ class Combo:
         self.reverse = reverse_primer
         self.name = "{} - {}".format(self.forward.name, self.reverse.name)
         self.amplicon = None
+        self.amp_len = None
         self.target = None
         self.primer_name = None
         self.combined_name = None
@@ -337,8 +352,10 @@ class Combo:
 
         if out == "":
             self.amplicon = "None found"
+            self.amp_len = 0
         else:
             self.amplicon = out.split()[3]
+            self.amp_len = len(self.amplicon)
 
     def get_order_info(self):
         """Gets the ordering info for the forward and reverse primers.
