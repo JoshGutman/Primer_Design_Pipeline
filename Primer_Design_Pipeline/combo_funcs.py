@@ -153,8 +153,8 @@ def output_combos(combos, outfile_name):
 
             #_write_primer(combo, combo.forward)
             #_write_primer(combo, combo.reverse)
-            outfile.write(combo.forward.display_info)
-            outfile.write(combo.reverse.display_info)
+            outfile.write(combo.forward.display_info + "\n")
+            outfile.write(combo.reverse.display_info + "\n")
             outfile.write("\n\n")
 
 
