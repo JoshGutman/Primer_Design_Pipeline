@@ -229,10 +229,10 @@ def format_combos(combos):
 
     for combo in combos:
         for primer in [combo.forward, combo.reverse]:
-            attributes = [primer.name, primer.max_mis_hit,
-                          primer.max_non_target_hit, primer.num_degens,
-                          str(primer.tm), str(combo.amp_len),
-                          str(combo.score)]
+            attributes = [primer.name, str(primer.max_mis_hit),
+                          str(primer.max_non_target_hit),
+                          str(primer.num_degens), str(primer.tm),
+                          str(combo.amp_len), str(combo.score)]
             out = ""
             for attribute in attributes:
                 out += _format_string(attribute)
