@@ -70,7 +70,8 @@ def find_empty_row(data):
     for index, row in enumerate(data):
         for item in row:
             if item != "":
-                return index
+                continue
+            return index
     return len(data)
 
 
