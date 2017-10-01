@@ -32,7 +32,7 @@ def make_target_list(directory):
     os.chdir(directory)
     with open("target_list.txt", "w") as outfile:
         for file in glob.glob("*.fasta"):
-            outfile.write(os.path.basename(file) + "\n")
+            outfile.write(os.path.splitext(os.path.basename(file))[0] + "\n")
 
 
 if __name__ == "__main__":
