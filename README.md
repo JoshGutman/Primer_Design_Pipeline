@@ -72,8 +72,7 @@ In the directory that you ran the job from, there will be a file called best_pri
 
 In the directory that you ran the job from, there will be a sub-directory for each target in the target multifasta. In each sub-directory, there will be four files (if the -k flag is False):
 1. candidate_primers.txt -- Same as best_primers.txt, except with all of the possible primers instead of the three best ones.
-2. ordering_info.txt -- Ordering information for each possible primer.
-3. primer_conflicts.txt -- Quality check that shows which primers conflict with each other and at what lengths.
-4. primers.blast.out -- Quality check that BLASTs all primers against the combined BLAST database (combined.seqs).
+2. primer_conflicts.txt -- Quality check that shows which primers conflict with each other and at what lengths.
+3. primers.blast.out -- Quality check that BLASTs all primers against the combined BLAST database (combined.seqs).
 
 The slurm outfile will include a lot of junk at the beginning -- this is due to neben. If an error occurs, it will be at the bottom of the outfile.
