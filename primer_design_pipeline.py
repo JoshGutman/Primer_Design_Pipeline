@@ -26,6 +26,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
                    reference_fasta, project_dir)
 
     all_combos = []
+    all_primers = []
     best_combos = []
     new_dirs = []
     for target in targets:
@@ -42,6 +43,9 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
 
         primers, mis_hits, non_target_hits = get_primers(config_file, target, directory, lower, upper)
+
+        for primer in primers:
+            all_primers.append(primer)
 
         genomes = get_genomes(target)
         get_degens(primers, genomes, ignore)
@@ -66,10 +70,11 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         score_combos(primers, combos)
 
         output_combos(combos, "candidate_primers.txt")
-        #output_ordering_info(combos)
         best_combos.append(choose_best_combos(combos))
 
         os.chdir("..")
+
+    score_combos(all_primers, all_combos)
 
     for combo in best_combos:
         output_combos(combo, "best_primers.txt")
