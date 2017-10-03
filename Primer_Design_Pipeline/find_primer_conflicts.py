@@ -31,7 +31,7 @@ def find_primer_conflicts(primer_fasta):
         Doesn't account for the fact that values of higher alignment lengths
         should be encapsulated in lower alignment lengths. For example,
         conflicts[8] should contain the conflicts that occur at alignment
-        lengths of 8, 9, and 10, but in reality, only contain the the conflicts
+        lengths of 8, 9, and 10, but only contain the the conflicts
         that occur at length 8.
 
     """
@@ -42,7 +42,7 @@ def find_primer_conflicts(primer_fasta):
     out = _parse_blast_output("primer_conflicts_blast.out")
     os.remove("primer_conflicts_blast.out")
 
-    output_conflicts(out)
+    #output_conflicts(out)
 
     return out
 
