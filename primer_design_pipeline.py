@@ -2,6 +2,7 @@ import subprocess
 import argparse
 import pickle
 import sys
+import csv
 import os
 
 from Primer_Design_Pipeline.setup import Constants, init
@@ -10,13 +11,13 @@ from Primer_Design_Pipeline.get_primers import get_primers
 from Primer_Design_Pipeline.get_genomes import get_genomes
 from Primer_Design_Pipeline.get_degens import get_degens
 from Primer_Design_Pipeline.combo_funcs import *
-from Primer_Design_Pipeline.find_primer_conflicts import find_primer_conflicts, blast_all_primers
+from Primer_Design_Pipeline.find_primer_conflicts import *
 
 
 # Driver
 def primer_design_pipeline(target_file, directory, config_file, target_list,
                            reference_fasta, lower, upper, ignore, oligo_conc,
-                           na_conc, mg_conc, project_dir, keep):
+                           na_conc, mg_conc, project_dir, multiplex, keep):
 
     target_list = os.path.abspath(target_list)
     reference_fasta = os.path.abspath(reference_fasta)
@@ -51,7 +52,8 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         get_degens(primers, genomes, ignore)
 
         blast_all_primers("alignment_blast_in.fasta")
-        find_primer_conflicts("alignment_blast_in.fasta")
+        conflicts = find_primer_conflicts("alignment_blast_in.fasta")
+        output_conflicts(conflicts)
 
         combos = get_combos(primers, lower, upper)
 
@@ -80,6 +82,11 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         output_combos(combo, "best_primers.txt")
 
     pickle_combos(all_combos)
+
+    if multiplex:
+        make_primer_fasta(multiplex, all_combos)
+        all_conflicts = find_primer_conflicts("all_primers.fasta")
+        output_conflicts(all_conflicts)
 
     if not keep:
         remove_excess_files(new_dirs)
@@ -119,6 +126,34 @@ def pickle_combos(all_combos):
         pickle.dump(all_combos, outfile, fix_imports=False)
 
 
+def make_primer_fasta(multiplex_csv, all_combos):
+    with open(multiplex_csv, newline="") as infile:
+        reader = csv.reader(infile)
+        lines = list(reader)
+
+    to_write = []
+    for line in lines:
+        if _line_is_empty(line):
+            break
+        to_write.append("{}_{}\n{}\n".format(line[1], line[2], line[4]))
+
+    def _line_is_empty(line):
+        for item in line:
+            if item != "":
+                return False
+        return True
+
+    with open("all_primers.fasta", "w") as outfile:
+        for combo in all_combos:
+            for primer in [combo.forward, combo.reverse]:
+                outfile.write(">{}_{}\n{}\n".format(combo.name, primer.name, primer.sequence))
+        for item in to_write:
+            outfile.write(item)
+    
+
+    
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(prog="primer_design_pipeline.py")
@@ -133,9 +168,10 @@ if __name__ == "__main__":
     parser.add_argument("-ol", "--oligo_conc", help="Oligo concentration (μM) for calculating Tm", type=float, default=.25)
     parser.add_argument("-na", "--na_conc", help="Na+ concentration (mM) for calculating Tm", type=float, default=50)
     parser.add_argument("-mg", "--mg_conc", help="Mg++ concentration (mM) for calculating Tm", type=float, default=0)
-    parser.add_argument("-k", "--keep", help="Keep all temporary files", type=bool, default=False) #TODO
+    parser.add_argument("-m", "--multiplex", help="Path to multiplex ordering .csv file", default=None)
+    parser.add_argument("-k", "--keep", help="Keep all temporary files", type=bool, default=False)
 
     project_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 
     args = parser.parse_args()
-    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore, args.oligo_conc, args.na_conc, args.mg_conc, project_dir, args.keep)
+    primer_design_pipeline(args.target, args.directory, args.config, args.genomes, args.reference, args.lower, args.upper, args.ignore, args.oligo_conc, args.na_conc, args.mg_conc, project_dir, args.multiplex, args.keep)
