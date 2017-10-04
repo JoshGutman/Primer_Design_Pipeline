@@ -5,7 +5,10 @@ against a database of all reference genomes.
 
 """
 import os
+import itertools
 import subprocess
+
+from Bio import Seq, SeqIO
 
 from .setup import Constants, FileNames
 
@@ -36,11 +39,19 @@ def find_primer_conflicts(primer_fasta):
 
     """
     primer_path = os.path.abspath(primer_fasta)
+
+    all_seqs = _get_all_sequences(primer_path)
+
+    with open(primer_path, "w") as outfile:
+        for key in all_seqs:
+            for seq in all_seqs[key]:
+                outfile.write(">{}\n{}\n".format(key, seq))
+    
     subprocess.run("makeblastdb -in {} -dbtype nucl > /dev/null 2>&1".format(primer_path), shell=True)
     subprocess.run("blastn -task blastn -query {} -db {} -perc_identity 100 -dust no -evalue 20 -word_size 4 -outfmt 6 -out primer_conflicts_blast.out > /dev/null 2>&1".format(primer_path, primer_path), shell=True)
 
     out = _parse_blast_output("primer_conflicts_blast.out")
-    os.remove("primer_conflicts_blast.out")
+    #os.remove("primer_conflicts_blast.out")
 
     #output_conflicts(out)
 
@@ -132,6 +143,24 @@ def output_conflicts(conflicts):
                             out.write("{}\t{}\n".format(data[0], data[1]))
                 out.write("\n\n")
 
+
+def _get_all_sequences(fasta):
+    to_write = {}
+    with open(fasta) as infile:
+        for record in SeqIO.parse(infile):
+            if str(record.id) in to_write:
+                to_write[str(record.id)].append(_expand_degenerate_sequence(
+                    str(record.seq)))
+            else:
+                to_write[str(record.id)] = [_expand_degenerate_sequence(
+                    str(record.seq))]
+    return to_write
+
+
+def _expand_degenerate_sequence(seq):
+	d = Seq.IUPAC.IUPACData.ambiguous_dna_values
+	return list(map("".join, itertools.product(*map(d.get, seq))))
+                
 
 def blast_all_primers(primer_fasta):
     """BLAST all candidate primers against database of all reference genomes.
