@@ -144,15 +144,16 @@ def make_primer_fasta(multiplex, all_combos):
             lines = list(reader)
 
         to_write = []
+        del lines[0]
         for line in lines:
             if _line_is_empty(line):
                 break
-            to_write.append("{}_{}\n{}\n".format(line[1], line[2], line[4]))
+            to_write.append(">{}_{}\n{}\n".format(line[1], line[2], line[4]))
 
         with open("all_primers.fasta", "w") as outfile:
             for combo in all_combos:
                 for primer in [combo.forward, combo.reverse]:
-                    outfile.write(">{}_{}\n{}\n".format(combo.name, primer.name, primer.sequence))
+                    outfile.write(">{}_{}\n{}\n".format(combo.target, primer.name, primer.sequence))
             for item in to_write:
                 outfile.write(item)
 
