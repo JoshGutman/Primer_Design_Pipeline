@@ -109,6 +109,7 @@ def remove_excess_files(directories):
         os.remove(os.path.basename(Constants.config_file))
         os.remove(FileNames.muscle_input)
         os.remove(FileNames.muscle_output)
+        os.remove("primer_conflicts_blast.out")
 
         os.chdir("..")
 
@@ -130,7 +131,7 @@ def make_primer_fasta(multiplex, all_combos):
 
     extension = os.path.splitext(multiplex)[1]
 
-    if extension == "csv":
+    if extension == ".csv":
 
         def _line_is_empty(line):
             for item in line:
@@ -155,7 +156,7 @@ def make_primer_fasta(multiplex, all_combos):
             for item in to_write:
                 outfile.write(item)
 
-    elif extension == "fasta":
+    elif extension == ".fasta":
         with open("all_primers.fasta", "w") as outfile:
             for primer in [combo.forward, combo.reverse]:
                 outfile.write(">{}_{}\n{}\n".format(combo.name, primer.name, primer.sequence))
