@@ -148,18 +148,14 @@ def _get_all_sequences(fasta):
     to_write = {}
     with open(fasta) as infile:
         for record in SeqIO.parse(infile, "fasta"):
-            if str(record.id) in to_write:
-                to_write[str(record.id)].append(_expand_degenerate_sequence(
-                    str(record.seq)))
-            else:
-                to_write[str(record.id)] = [_expand_degenerate_sequence(
-                    str(record.seq))]
+            to_write[str(record.id)] = _expand_degenerate_sequence(
+                str(record.seq))
     return to_write
 
 
 def _expand_degenerate_sequence(seq):
-	d = Seq.IUPAC.IUPACData.ambiguous_dna_values
-	return list(map("".join, itertools.product(*map(d.get, seq))))
+    d = Seq.IUPAC.IUPACData.ambiguous_dna_values
+    return list(map("".join, itertools.product(*map(d.get, seq))))
                 
 
 def blast_all_primers(primer_fasta):
