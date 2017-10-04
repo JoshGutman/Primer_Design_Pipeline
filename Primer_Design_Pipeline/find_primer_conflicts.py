@@ -147,7 +147,7 @@ def output_conflicts(conflicts):
 def _get_all_sequences(fasta):
     to_write = {}
     with open(fasta) as infile:
-        for record in SeqIO.parse(infile):
+        for record in SeqIO.parse(infile, "fasta"):
             if str(record.id) in to_write:
                 to_write[str(record.id)].append(_expand_degenerate_sequence(
                     str(record.seq)))
