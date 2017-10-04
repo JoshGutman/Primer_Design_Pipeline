@@ -126,30 +126,40 @@ def pickle_combos(all_combos):
         pickle.dump(all_combos, outfile, fix_imports=False)
 
 
-def make_primer_fasta(multiplex_csv, all_combos):
-    with open(multiplex_csv, newline="") as infile:
-        reader = csv.reader(infile)
-        lines = list(reader)
+def make_primer_fasta(multiplex, all_combos):
 
-    to_write = []
-    for line in lines:
-        if _line_is_empty(line):
-            break
-        to_write.append("{}_{}\n{}\n".format(line[1], line[2], line[4]))
+    extension = os.path.splitext(multiplex)[1]
 
-    def _line_is_empty(line):
-        for item in line:
-            if item != "":
-                return False
-        return True
+    if extension == "csv":
 
-    with open("all_primers.fasta", "w") as outfile:
-        for combo in all_combos:
+        def _line_is_empty(line):
+            for item in line:
+                if item != "":
+                    return False
+            return True
+
+        with open(multiplex, newline="") as infile:
+            reader = csv.reader(infile)
+            lines = list(reader)
+
+        to_write = []
+        for line in lines:
+            if _line_is_empty(line):
+                break
+            to_write.append("{}_{}\n{}\n".format(line[1], line[2], line[4]))
+
+        with open("all_primers.fasta", "w") as outfile:
+            for combo in all_combos:
+                for primer in [combo.forward, combo.reverse]:
+                    outfile.write(">{}_{}\n{}\n".format(combo.name, primer.name, primer.sequence))
+            for item in to_write:
+                outfile.write(item)
+
+    elif extension == "fasta":
+        with open("all_primers.fasta", "w") as outfile:
             for primer in [combo.forward, combo.reverse]:
                 outfile.write(">{}_{}\n{}\n".format(combo.name, primer.name, primer.sequence))
-        for item in to_write:
-            outfile.write(item)
-    
+        subprocess.run("cat {} >> all_primers.fasta".format(multiplex))
 
     
 
