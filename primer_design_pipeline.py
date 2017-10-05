@@ -117,12 +117,16 @@ def remove_excess_files(directories):
     for directory in directories:
         os.remove(directory + ".fasta")
 
-    os.remove("primer_conflicts_blast.out")
+    try:
+        os.remove("primer_conflicts_blast.out")
+        subprocess.run("rm {}*".format("all_primers*"), shell=True)
+    except FileNotFoundError:
+        pass
 
     subprocess.run("rm {}*".format(Constants.combined_seqs), shell=True)
     subprocess.run("rm {}*".format(Constants.target_db), shell=True)
     subprocess.run("rm {}*".format(Constants.non_target_db), shell=True)
-    subprocess.run("rm {}*".format("all_primers*"), shell=True)
+    
     
 
 def pickle_combos(all_combos):
