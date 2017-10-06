@@ -57,7 +57,7 @@ def score_combos(primers, combos):
         Mutates the Primer.score and Combo.score instance variables.
 
     Notes:
-        The score is calculated by sorting the list Primers by each factor.
+        The score is calculated by sorting the list Primers by each attribute.
         After each sort, the position of each Primer object within the list is
         added to the Primer object's score. For example, the primer with the
         fewest degens will have 0 added to its score, while the primer with the
@@ -66,6 +66,12 @@ def score_combos(primers, combos):
         If a combo object doesn't have an amplicon, 1000 is added to its score.
 
     """
+    for primer in primers:
+        primer.score = 0
+
+    for combo in combos:
+        combo.score = 0
+    
     def _add_score():
         for i, primer in enumerate(primers):
             primer.score += i
