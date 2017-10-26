@@ -121,6 +121,7 @@ def output_combos(combos, outfile_name):
             outfile.write("Key:\n")
             outfile.write("Name,\tMax mis-hit,\tMax non-target hit,\t# degens,"
                           "\tsequence,\t[Min,Max,Avg] Tm,\tAmplicon length,"
+                          "\t# target amplicons,\t# non-target amplicons,"
                           "\tScore\n\n\n")
 
         outfile.write("\n======================================================"
@@ -130,23 +131,6 @@ def output_combos(combos, outfile_name):
         outfile.write("========================================================"
                       "========================================================"
                       "=============================\n\n")
-
-        '''
-        def _write_primer(combo, primer):
-            if combo.amplicon == "None found":
-                amp_len = 0
-            else:
-                amp_len = len(combo.amplicon)
-            outfile.write("{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\n".format(
-                primer.name,
-                primer.max_mis_hit,
-                primer.max_non_target_hit,
-                primer.num_degens,
-                primer.sequence,
-                primer.tm,
-                amp_len,
-                combo.score))
-        '''
 
         format_combos(combos)
 
@@ -165,7 +149,7 @@ def output_combos(combos, outfile_name):
 def format_combos(combos):
 
     order = ["name", "mis_hit", "non_target_hit", "num_degens", "tm",
-             "amp_len", "score"]
+             "amp_len", "target_amp", "non_target_amp", "score"]
     attributes = {}
 
     for item in order:
@@ -179,6 +163,8 @@ def format_combos(combos):
             attributes["num_degens"].append(str(primer.num_degens))
             attributes["tm"].append(str(primer.tm))
         attributes["amp_len"].append(str(combo.amp_len))
+        attributes["target_amp"].append(str(combo.target_amplicons))
+        attributes["target_amp"].append(str(combo.non_target_amplicons))
         attributes["score"].append(str(combo.score))
 
     lengths = []
@@ -192,7 +178,8 @@ def format_combos(combos):
         return out
 
     for combo in combos:
-        combo_attributes = [str(combo.amp_len), str(combo.score)]
+        combo_attributes = [str(combo.amp_len), str(combo.target_amplicons),
+                            str(combo.non_target_amplicons), str(combo.score)]
         for primer in [combo.forward, combo.reverse]:
             attributes = [primer.name, str(primer.max_mis_hit),
                           str(primer.max_non_target_hit),
@@ -205,6 +192,8 @@ def format_combos(combos):
             primer.display_info = primer_info
 
         combo_info = ""
+        combo_info += _format_string(lengths[-4], combo_attributes[-4])
+        combo_info += _format_string(lengths[-3], combo_attributes[-3])
         combo_info += _format_string(lengths[-2], combo_attributes[-2])
         combo_info += _format_string(lengths[-1], combo_attributes[-1])
 
@@ -282,6 +271,9 @@ class Combo:
         self.target = None
         self.score = 0
         self.display_info = None
+
+        self.target_amplicons = 0
+        self.non_target_amplicons = 0
 
     @classmethod
     def increment_combo_id(cls):
