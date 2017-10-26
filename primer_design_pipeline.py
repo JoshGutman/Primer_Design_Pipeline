@@ -5,7 +5,7 @@ import sys
 import csv
 import os
 
-from Primer_Design_Pipeline.setup import Constants, init
+from Primer_Design_Pipeline.setup import Constants, FileNames, init
 from Primer_Design_Pipeline.get_tm import get_tm
 from Primer_Design_Pipeline.get_primers import get_primers
 from Primer_Design_Pipeline.get_genomes import get_genomes
@@ -68,6 +68,8 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
             combo.target = target
             all_combos.append(combo)
+
+        amplicons_blast_db(combos)
 
         score_combos(primers, combos)
 
@@ -170,7 +172,38 @@ def make_primer_fasta(multiplex, all_combos):
                 outfile.write(">{}_{}\n{}\n".format(combo.name, primer.name, primer.sequence))
         subprocess.run("cat {} >> all_primers.fasta".format(multiplex))
 
+
+def amplicons_blast_db(combos):
     
+    def _num_amplicons(combo, target):
+        with open(FileNames.neben_output, "rU") as infile:
+            lines = infile.readlines()
+        if target:
+            combo.target_amplicons = len(lines)
+        else:
+            combo.non_target_amplicons = len(lines)
+        
+    for combo in combos:
+        subprocess.run("{}/Primer_Design_Pipeline/neben_linux_64 -max 500 "
+                       "--primers {}:{} {} > {}".format(
+                           Constants.project_dir,
+                           combo.forward.sequence,
+                           combo.reverse.sequence,
+                           Constants.target_db,
+                           FileNames.neben_output),
+                       shell=True)
+        _num_amplicons(combo, True)
+        
+        subprocess.run("{}/Primer_Design_Pipeline/neben_linux_64 -max 500 "
+                       "--primers {}:{} {} > {}".format(
+                           Constants.project_dir,
+                           combo.forward.sequence,
+                           combo.reverse.sequence,
+                           Constants.non_target_db,
+                           FileNames.neben_output),
+                       shell=True)
+        _num_amplicons(combo, False)
+
 
 
 if __name__ == "__main__":
