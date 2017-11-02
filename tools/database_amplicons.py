@@ -89,18 +89,18 @@ def _split_files(files):
 
 def _make_job(groups, file_list, neben_path, primer):
 
-    job_amount = 0
+    num_jobs = 0
     for key in groups:
-        job_amount += len(groups[key])
+        num_jobs += len(groups[key])
 
-    time = 30 * length
+    time = 30 * num_jobs
     hours = time//60
     minutes = time - (hours*60)
     time_str = "{}:{}:00".format(hours, minutes)
 
     with open("database_neben_job.sh", "w") as outfile:
         outfile.write("#SBATCH --job-name=database_neben\n")
-        outfile.write("#SBATCH --array=1-{}\n".format(job_amount))
+        outfile.write("#SBATCH --array=0-{}\n".format(num_jobs))
         outfile.write("#SBATCH --time={}\n".format(time_str))
         outfile.write("#SBATCH --mem=50000\n")
         outfile.write("\n")
@@ -179,4 +179,4 @@ if __name__ == "__main__":
         print("Error - must provide a primer ID or a forward and reverse sequence")
         sys.exit(1)
     
-    database_amplicons(args.directory, args.execute)
+    database_amplicons(args.directory, args.execute, args.primer, args.forward, args.reverse)
