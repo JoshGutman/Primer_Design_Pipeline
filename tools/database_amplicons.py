@@ -119,10 +119,11 @@ def _make_job(groups, file_list, neben_path, primer):
         outfile.write("\n")
 
         outfile.write("while read f; do\n")
-        outfile.write("\t{} -max 500 --primers {}:{} $FILE >> $OUTFILE".format(
+        outfile.write("\t{} -max 500 --primers {}:{} $f >> $OUTFILE\n".format(
             neben_path,
             primer[0],
             primer[1]))
+        outfile.write("done <$FILE\n")
         
 
 def _make_temp_dir():
