@@ -21,10 +21,10 @@ def database_amplicons(directory, execute, primer_id, forward, reverse):
 def _interpret_primer(primer_id, forward, reverse):
     if primer_id is None:
         return (forward, reverse)
-    else:
-        combos = _unpickle_combos()
-        combo = _get_combo_from_id(combos, primer_id)
-        return (combo.forward, combo.reverse)
+    
+    combos = _unpickle_combos()
+    combo = _get_combo_from_id(combos, primer_id)
+    return (combo.forward, combo.reverse)
         
 def _unpickle_combos():
     with open("combos.pickle", "rb") as infile:
@@ -48,7 +48,7 @@ def _get_neben_path():
 def _get_files(directory):
     out = {}
     for file in glob.glob("{}/**/*.fasta".format(directory), recursive=True):
-        dir_name = os.dirname(file)
+        dir_name = os.path.dirname(file)
         if dir_name not in out:
             out[dir_name] = [os.path.abspath(file)]
         else:
