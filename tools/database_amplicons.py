@@ -147,7 +147,7 @@ def _make_temp_files(groups, temp_dir):
         for idx, group in enumerate(groups[directory]):
             # Weird delimitter "---" that will (hopefully)
             # not show up in any file names.
-            file_name = "{}---{}".format(directory, idx)
+            file_name = "{}---{}.txt".format(directory.split("/")[-1], idx)
             with open(file_name, "w") as outfile:
                 for file in group:
                     outfile.write(file + "\n")
