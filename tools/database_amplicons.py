@@ -156,7 +156,8 @@ def _make_results_job(job_num, target, groups):
             results_name = "database_amplicon_results.txt"
             output_files = []
             for directory in groups:
-                output_files.append((directory.split("/")[-1], directory + "_output.txt"))
+                species_name = directory.split("/")[-1]
+                output_files.append((species_name, "tmp/{}_output.txt".format(species_name)))
 
             # Make array of species names
             outfile.write("SPECIES=(")
@@ -172,7 +173,7 @@ def _make_results_job(job_num, target, groups):
             outfile.write(")\n")
             outfile.write("\n")
 
-            outfile.write("for i in {{1..{}}}; do\n".format(len(output_files)))
+            outfile.write("for i in {{0..{}}}; do\n".format(len(output_files)-1))
             outfile.write("\tWC=`wc -l ${OUTPUT_FILES[$i]}`\n")
             outfile.write("\tNUM_LINES=(${WC// / })\n")
             outfile.write("\tif [ $NUM_LINES -gt 0 ]\n\tthen\n")
