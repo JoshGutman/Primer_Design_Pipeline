@@ -19,10 +19,12 @@ def database_amplicons(directory, execute, primer_id, forward, reverse, amp_size
     main_job = _make_job(groups, file_list, neben_path, primer, amp_size, target)
 
     if execute:
-        job_info = subprocess.check_output("sbatch {}".format(main_job), shell=True)
-        job_num = job_info.strip().split()[-1].decode("UTF-8")
+        #job_info = subprocess.check_output("sbatch {}".format(main_job), shell=True)
+        #job_num = job_info.strip().split()[-1].decode("UTF-8")
+        job_num = _run_job(main_job)
         results_job = _make_results_job(job_num, target, groups, num_files)
-        subprocess.run("sbatch {}".format(results_job), shell=True)
+        #subprocess.run("sbatch {}".format(results_job), shell=True)
+        _run_job(results_job)
 
 
 def _interpret_primer(primer_id, forward, reverse):
@@ -111,7 +113,7 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
     for key in groups:
         num_jobs += len(groups[key])
 
-    time = 30 * num_jobs
+    time = 10 * num_jobs
     hours = time//60
     minutes = time - (hours*60)
     time_str = "{}:{}:00".format(hours, minutes)
@@ -121,7 +123,7 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
         outfile.write("#SBATCH --job-name=database_amplicon\n")
         outfile.write("#SBATCH --array=0-{}\n".format(num_jobs-1))
         outfile.write("#SBATCH --time={}\n".format(time_str))
-        outfile.write("#SBATCH --mem=50000\n")
+        outfile.write("#SBATCH --mem=10000\n")
         outfile.write("\n")
 
         outfile.write("FILE_ARRAY=(")
@@ -193,7 +195,7 @@ def _make_results_job(job_num, target, groups, num_files):
             outfile.write("\tNUM_LINES=(${WC// / })\n")
             outfile.write("\tif [ $NUM_LINES -gt 0 ]\n\tthen\n")
             outfile.write('\t\tPERCENT=`echo "scale = 2; ($NUM_LINES / ${NUM_FILES[$i]}) * 100" | bc`\n')
-            outfile.write('\t\tprintf "${{SPECIES[$i]}}\\t$NUM_LINES/${{NUM_FILES[$i]}}\\t$PERCENT%\\n" >> {}\n'.format(results_name))
+            outfile.write('\t\tprintf "${{SPECIES[$i]}}\\t$NUM_LINES/${{NUM_FILES[$i]}}\\t$PERCENT%%\\n" >> {}\n'.format(results_name))
             outfile.write("\tfi\n")
             outfile.write("done\n")
 
@@ -230,6 +232,13 @@ def _make_temp_files(groups, temp_dir):
 
     os.chdir(old_dir)
     return file_list
+
+
+def _run_job(job_name):
+    out = subprocess.check_output("sbatch {}".format(job_name))
+    out = out.decode("UTF-8").strip()
+    print(out)
+    return out.split()[-1]
 
 
 
