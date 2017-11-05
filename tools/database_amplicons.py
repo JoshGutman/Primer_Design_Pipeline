@@ -15,13 +15,14 @@ def database_amplicons(directory, execute, primer_id, forward, reverse, amp_size
     groups = _split_files(files)
     temp_dir = _make_temp_dir()
     file_list = _make_temp_files(groups, temp_dir)
-    file_name = _make_job(groups, file_list, neben_path, primer, amp_size, target)
+    main_job = _make_job(groups, file_list, neben_path, primer, amp_size, target)
 
     if execute:
-        job_info = subprocess.check_output("sbatch {}".format(file_name), shell=True)
+        print(os.getcwd())
+        job_info = subprocess.check_output("sbatch {}".format(main_job), shell=True)
         job_num = job_info.strip().split()[-1].decode("UTF-8")
         results_job = _make_results_job(job_num, target, groups)
-        subprocess.run("sbatch {}".format(results_job))
+        subprocess.run("sbatch {}".format(results_job), shell=True)
 
 
 def _interpret_primer(primer_id, forward, reverse):
@@ -155,26 +156,26 @@ def _make_results_job(job_num, target, groups):
             results_name = "database_amplicon_results.txt"
             output_files = []
             for directory in groups:
-                output_files.append((directory, directory + "_output.txt"))
+                output_files.append((directory.split("/")[-1], directory + "_output.txt"))
 
+            # Make array of species names
             outfile.write("SPECIES=(")
             for file in output_files:
                 outfile.write(file[0] + " ")
             outfile.write(")\n")
-
             outfile.write("\n")
 
+            # Make array of output file names for each species
             outfile.write("OUTPUT_FILES=(")
             for file in output_files:
                 outfile.write(file[1] + " ")
             outfile.write(")\n")
-
             outfile.write("\n")
 
             outfile.write("for i in {{1..{}}}; do\n".format(len(output_files)))
-            outfile.write("\tWC=`wc -l ${OUTPUT_FILES[$i]}\n`")
+            outfile.write("\tWC=`wc -l ${OUTPUT_FILES[$i]}`\n")
             outfile.write("\tNUM_LINES=(${WC// / })\n")
-            outfile.write("\tif [ $NUM_LINES -gt 0 ]\nthen\n")
+            outfile.write("\tif [ $NUM_LINES -gt 0 ]\n\tthen\n")
             outfile.write('\t\tprintf "${{SPECIES[$i]}}\\t$NUM_LINES\\n" >> {}\n'.format(results_name))
             outfile.write("\tfi\n")
 
