@@ -12,16 +12,16 @@ def database_amplicons(directory, execute, primer_id, forward, reverse, amp_size
     neben_path = _get_neben_path()
 
     files = _get_files(directory)
+    num_files = _get_num_files(files)
     groups = _split_files(files)
     temp_dir = _make_temp_dir()
     file_list = _make_temp_files(groups, temp_dir)
     main_job = _make_job(groups, file_list, neben_path, primer, amp_size, target)
 
     if execute:
-        print(os.getcwd())
         job_info = subprocess.check_output("sbatch {}".format(main_job), shell=True)
         job_num = job_info.strip().split()[-1].decode("UTF-8")
-        results_job = _make_results_job(job_num, target, groups)
+        results_job = _make_results_job(job_num, target, groups, num_files)
         subprocess.run("sbatch {}".format(results_job), shell=True)
 
 
@@ -61,6 +61,13 @@ def _get_files(directory):
             out[dir_name] = [os.path.abspath(file)]
         else:
             out[dir_name].append(os.path.abspath(file))
+    return out
+
+
+def _get_num_files(files):
+    out = {}
+    for directory in files:
+        out[directory] = len(files[directory])
     return out
 
 
@@ -142,7 +149,7 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
     return outfile_name
 
 
-def _make_results_job(job_num, target, groups):
+def _make_results_job(job_num, target, groups, num_files):
     outfile_name = "database_amplicon_results_job.sh"
     with open(outfile_name, "w") as outfile:
         outfile.write("#!/bin/bash\n")
@@ -173,11 +180,19 @@ def _make_results_job(job_num, target, groups):
             outfile.write(")\n")
             outfile.write("\n")
 
+            # Make array of number of files in database for each species
+            outfile.write("NUM_FILES=(")
+            for file in output_files:
+                outfile.write(num_files[file[0]] + " ")
+            outfile.write(")\n")
+            outfile.write("\n")
+
             outfile.write("for i in {{0..{}}}; do\n".format(len(output_files)-1))
             outfile.write("\tWC=`wc -l ${OUTPUT_FILES[$i]}`\n")
             outfile.write("\tNUM_LINES=(${WC// / })\n")
             outfile.write("\tif [ $NUM_LINES -gt 0 ]\n\tthen\n")
-            outfile.write('\t\tprintf "${{SPECIES[$i]}}\\t$NUM_LINES\\n" >> {}\n'.format(results_name))
+            outfile.write('\t\tPERCENT=`echo "scale = 2; ($NUM_LINES / ${NUM_FILES[$i]}) * 100" | bc`\n')
+            outfile.write('\t\tprintf "${{SPECIES[$i]}}\\t$NUM_LINES/${{NUM_FILES[$i]}}\\t$PERCENT%\\n" >> {}\n'.format(results_name))
             outfile.write("\tfi\n")
             outfile.write("done\n")
 
