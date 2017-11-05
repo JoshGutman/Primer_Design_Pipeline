@@ -101,6 +101,7 @@ def _split_files(files):
                 time_total += 3
 
             group.append(file)
+        out[key].append(group)
 
     return out
 
@@ -235,7 +236,7 @@ def _make_temp_files(groups, temp_dir):
 
 
 def _run_job(job_name):
-    out = subprocess.check_output("sbatch {}".format(job_name))
+    out = subprocess.check_output("sbatch {}".format(job_name), shell=True)
     out = out.decode("UTF-8").strip()
     print(out)
     return out.split()[-1]
