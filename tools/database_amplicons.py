@@ -67,7 +67,8 @@ def _get_files(directory):
 def _get_num_files(files):
     out = {}
     for directory in files:
-        out[directory] = len(files[directory])
+        key = directory.split("/")[-1]
+        out[key] = len(files[directory])
     return out
 
 
@@ -204,7 +205,7 @@ def _make_temp_dir():
     tmp_dir = os.path.join(os.getcwd(), "tmp")
     if os.path.exists(tmp_dir):
         print("Error - {} directory already exists. Please delete it and try"
-              "again".format(tmp_dir))
+              " again".format(tmp_dir))
         sys.exit(1)
     else:
         subprocess.run("mkdir tmp", shell=True)
