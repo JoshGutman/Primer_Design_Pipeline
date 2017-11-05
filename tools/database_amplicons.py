@@ -184,7 +184,7 @@ def _make_results_job(job_num, target, groups, num_files):
             # Make array of number of files in database for each species
             outfile.write("NUM_FILES=(")
             for file in output_files:
-                outfile.write(num_files[file[0]] + " ")
+                outfile.write(str(num_files[file[0]]) + " ")
             outfile.write(")\n")
             outfile.write("\n")
 
