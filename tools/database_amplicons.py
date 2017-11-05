@@ -178,6 +178,7 @@ def _make_results_job(job_num, target, groups):
             outfile.write("\tif [ $NUM_LINES -gt 0 ]\n\tthen\n")
             outfile.write('\t\tprintf "${{SPECIES[$i]}}\\t$NUM_LINES\\n" >> {}\n'.format(results_name))
             outfile.write("\tfi\n")
+            outfile.write("done\n")
 
     return outfile_name
 
