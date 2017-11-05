@@ -6,26 +6,33 @@ import sys
 import os
 
 
-def database_amplicons(directory, execute, primer_id, forward, reverse):
+def database_amplicons(directory, execute, primer_id, forward, reverse, amp_size, target):
 
     primer = _interpret_primer(primer_id, forward, reverse)
     neben_path = _get_neben_path()
-    
+
     files = _get_files(directory)
     groups = _split_files(files)
     temp_dir = _make_temp_dir()
     file_list = _make_temp_files(groups, temp_dir)
-    _make_job(groups, file_list, neben_path, primer)
-    
+    file_name = _make_job(groups, file_list, neben_path, primer, amp_size, target)
+
+    if execute:
+        job_info = subprocess.check_output("sbatch {}".format(file_name), shell=True)
+        job_num = job_info.strip().split()[-1].decode("UTF-8")
+        results_job = _make_results_job(job_num, target, groups)
+        subprocess.run("sbatch {}".format(results_job))
+
 
 def _interpret_primer(primer_id, forward, reverse):
     if primer_id is None:
         return (forward, reverse)
-    
+
     combos = _unpickle_combos()
     combo = _get_combo_from_id(combos, primer_id)
     return (combo.forward, combo.reverse)
-        
+
+
 def _unpickle_combos():
     with open("combos.pickle", "rb") as infile:
         combos = pickle.load(infile)
@@ -62,8 +69,8 @@ def _split_files(files):
     out = {}
     for key in files:
         out[key] = []
-    time_limit = 1200
-    
+    time_limit = 600
+
     for key in files:
         group = []
         time_total = 0
@@ -72,7 +79,7 @@ def _split_files(files):
                 out[key].append(group)
                 group = []
                 time_total = 0
-            
+
             if "Complete" in file:
                 time_total += 3
             elif "Contig" in file:
@@ -81,13 +88,15 @@ def _split_files(files):
                 time_total += 1
             else:
                 time_total += 3
-            
+
             group.append(file)
-            
+
     return out
 
 
-def _make_job(groups, file_list, neben_path, primer):
+def _make_job(groups, file_list, neben_path, primer, amp_size, target):
+
+    outfile_name = "database_amplicon_job.sh"
 
     num_jobs = 0
     for key in groups:
@@ -98,9 +107,10 @@ def _make_job(groups, file_list, neben_path, primer):
     minutes = time - (hours*60)
     time_str = "{}:{}:00".format(hours, minutes)
 
-    with open("database_neben_job.sh", "w") as outfile:
-        outfile.write("#SBATCH --job-name=database_neben\n")
-        outfile.write("#SBATCH --array=0-{}\n".format(num_jobs))
+    with open(outfile_name, "w") as outfile:
+        outfile.write("#!/bin/bash\n")
+        outfile.write("#SBATCH --job-name=database_amplicon\n")
+        outfile.write("#SBATCH --array=0-{}\n".format(num_jobs-1))
         outfile.write("#SBATCH --time={}\n".format(time_str))
         outfile.write("#SBATCH --mem=50000\n")
         outfile.write("\n")
@@ -119,12 +129,58 @@ def _make_job(groups, file_list, neben_path, primer):
         outfile.write("\n")
 
         outfile.write("while read f; do\n")
-        outfile.write("\t{} -max 500 --primers {}:{} $f >> $OUTFILE\n".format(
-            neben_path,
-            primer[0],
-            primer[1]))
-        outfile.write("done <$FILE\n")
-        
+
+        if not target:
+            outfile.write("\t{} -max {} --primers {}:{} $f | head -1 >> $OUTFILE\n".format(
+                neben_path,
+                amp_size+50,
+                primer[0],
+                primer[1]))
+            outfile.write("done <$FILE\n")
+
+    return outfile_name
+
+
+def _make_results_job(job_num, target, groups):
+    outfile_name = "database_amplicon_results_job.sh"
+    with open(outfile_name, "w") as outfile:
+        outfile.write("#!/bin/bash\n")
+        outfile.write("#SBATCH --job-name=database_amplicon_results\n")
+        outfile.write("#SBATCH --time=30:00\n")
+        outfile.write("#SBATCH --mem=10000\n")
+        outfile.write("#SBATCH --dependency=afterok:{}\n".format(job_num))
+        outfile.write("\n")
+
+        if not target:
+            results_name = "database_amplicon_results.txt"
+            output_files = []
+            for directory in groups:
+                output_files.append((directory, directory + "_output.txt"))
+
+            outfile.write("SPECIES=(")
+            for file in output_files:
+                outfile.write(file[0] + " ")
+            outfile.write(")\n")
+
+            outfile.write("\n")
+
+            outfile.write("OUTPUT_FILES=(")
+            for file in output_files:
+                outfile.write(file[1] + " ")
+            outfile.write(")\n")
+
+            outfile.write("\n")
+
+            outfile.write("for i in {{1..{}}}; do\n".format(len(output_files)))
+            outfile.write("\tWC=`wc -l ${OUTPUT_FILES[$i]}\n`")
+            outfile.write("\tNUM_LINES=(${WC// / })\n")
+            outfile.write("\tif [ $NUM_LINES -gt 0 ]\nthen\n")
+            outfile.write('\t\tprintf "${{SPECIES[$i]}}\\t$NUM_LINES\\n" >> {}\n'.format(results_name))
+            outfile.write("\tfi\n")
+
+    return outfile_name
+
+
 
 def _make_temp_dir():
     tmp_dir = os.path.join(os.getcwd(), "tmp")
@@ -140,7 +196,7 @@ def _make_temp_dir():
 
 def _make_temp_files(groups, temp_dir):
     file_list = []
-    
+
     old_dir = os.getcwd()
     os.chdir(temp_dir)
     for directory in groups:
@@ -152,12 +208,11 @@ def _make_temp_files(groups, temp_dir):
                 for file in group:
                     outfile.write(file + "\n")
             file_list.append(os.path.abspath(file_name))
-            
+
     os.chdir(old_dir)
     return file_list
-            
-   
-    
+
+
 
 if __name__ == "__main__":
 
@@ -172,11 +227,13 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--primer", help="Unique primer ID")
     parser.add_argument("-f", "--forward", help="Forward primer sequence")
     parser.add_argument("-r", "--reverse", help="Reverse primer sequence")
+    parser.add_argument("-a", "--amplicon_size", help="Desired amplicon size (default 500)", type=int, default=500)
+    parser.add_argument("-t", "--target", const=True, nargs="?", help="Inputted directory is the same species as primer (default False)", type=bool, default=False)
 
     args = parser.parse_args()
 
     if args.primer is None and (args.forward is None or args.reverse is None):
         print("Error - must provide a primer ID or a forward and reverse sequence")
         sys.exit(1)
-    
-    database_amplicons(args.directory, args.execute, args.primer, args.forward, args.reverse)
+
+    database_amplicons(args.directory, args.execute, args.primer, args.forward, args.reverse, args.amplicon_size, args.target)
