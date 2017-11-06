@@ -19,11 +19,8 @@ def database_amplicons(directory, execute, primer_id, forward, reverse, amp_size
     main_job = _make_job(groups, file_list, neben_path, primer, amp_size, target)
 
     if execute:
-        #job_info = subprocess.check_output("sbatch {}".format(main_job), shell=True)
-        #job_num = job_info.strip().split()[-1].decode("UTF-8")
         job_num = _run_job(main_job)
         results_job = _make_results_job(job_num, target, groups, num_files)
-        #subprocess.run("sbatch {}".format(results_job), shell=True)
         _run_job(results_job)
 
 
@@ -114,22 +111,24 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
     for key in groups:
         num_jobs += len(groups[key])
 
+    '''
     time = 10 * num_jobs
     hours = time//60
     minutes = time - (hours*60)
     time_str = "{}:{}:00".format(hours, minutes)
+    '''
 
     with open(outfile_name, "w") as outfile:
         outfile.write("#!/bin/bash\n")
         outfile.write("#SBATCH --job-name=database_amplicon\n")
         outfile.write("#SBATCH --array=0-{}\n".format(num_jobs-1))
-        outfile.write("#SBATCH --time={}\n".format(time_str))
-        outfile.write("#SBATCH --mem=10000\n")
+        outfile.write("#SBATCH --time=45:00\n")
+        outfile.write("#SBATCH --mem=5000\n")
         outfile.write("\n")
 
         outfile.write("FILE_ARRAY=(")
         for file in file_list:
-            outfile.write(file + " ")
+            outfile.write('"{}" '.format(file))
         outfile.write(")\n")
         outfile.write("\n")
 
@@ -142,10 +141,10 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
 
         if target:
             species_name = list(groups.keys())[0].split("/")[-1]
-            subprocess.run('echo "0 amplicons:" > {}_output-0.txt\n'.format(species_name), shell=True)
-            subprocess.run('echo "1 amplicon:" > {}_output-1.txt\n'.format(species_name), shell=True)
-            subprocess.run('echo "2 or more amplicons:" > {}_output-2.txt\n'.format(species_name), shell=True)
-
+            subprocess.run('touch tmp/{}_output-0.txt\n'.format(species_name), shell=True)
+            subprocess.run('touch tmp/{}_output-1.txt\n'.format(species_name), shell=True)
+            subprocess.run('touch tmp/{}_output-2.txt\n'.format(species_name), shell=True)
+            
             outfile.write("while read f; do\n")
             outfile.write("\tWC=`{} -max {} --primers {}:{} $f | wc -l`".format(
                 neben_path,
@@ -190,9 +189,32 @@ def _make_results_job(job_num, target, groups, num_files):
         results_name = "database_amplicon_results.txt"
 
         if target:
-            species_name = list(groups.keys())[0].split("/")[-1]
+
+            path = list(groups.keys())[0]
+            num_files = 0
+            for group in groups[path]:
+                num_files += len(group)
+
+            species_name = path.split("/")[-1]
             outfile.write("for i in {0..2}; do\n")
-            outfile.write("\tcat tmp/{}_output-$i >> {}\n".format(species_name, results_name))
+            outfile.write("\tWC=`wc -l tmp/{}_output-$i`".format(species_name))
+            outfile.write("\tNUM_LINES=${WC// / })\n")
+            outfile.write('\tPERCENT=`echo "scale = 2; ($NUM_LINES / {}) * 100" | bc`\n'.format(num_files))
+            outfile.write("\tif [ $i -eq 2 ]\n\tthen\n")
+            outfile.write('\t\tprintf "$i or more Amplicons\\t$NUM_LINES/{}\\t$PERCENT%%\\n" >> {}\n'.format(num_files, results_name))
+            outfile.write("\telse\n")
+            outfile.write('\tprintf "$i Amplicons\\t\\t$NUM_LINES/{}\\t$PERCENT%%\\n" >> {}\n'.format(num_files, results_name))
+            outfile.write("\tfi\n")
+            outfile.write("done\n")
+            outfile.write("\n")
+            
+            outfile.write("for i in {0..2}; do\n")
+            outfile.write("\tif [ $i -eq 2 ]\n\tthen\n")
+            outfile.write('\t\techo "$i or more Amplicons:" >> {}\n'.format(results_name))
+            outfile.write("\telse\n")
+            outfile.write('\t\techo "$i Amplicons:" >> {}\n'.format(results_name))
+            outfile.write("\tfi\n")
+            outfile.write("\tcat tmp/{}_output-$i.txt >> {}\n".format(species_name, results_name))
             outfile.write('\techo >> {}\n'.format(results_name))
             outfile.write("done\n")
 
