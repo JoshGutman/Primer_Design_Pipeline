@@ -133,22 +133,46 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
         outfile.write(")\n")
         outfile.write("\n")
 
-        outfile.write("OUTPUT=_output.txt\n")
+        outfile.write("OUTPUT=_output\n")
         outfile.write("FILE=${FILE_ARRAY[$SLURM_ARRAY_TASK_ID]}\n")
         outfile.write("SPLIT_NAME=(${FILE//---/ })\n")
         outfile.write("DIR_NAME=${SPLIT_NAME[0]}\n")
         outfile.write("OUTFILE=$DIR_NAME$OUTPUT\n")
         outfile.write("\n")
 
-        outfile.write("while read f; do\n")
+        if target:
+            species_name = list(groups.keys())[0].split("/")[-1]
+            subprocess.run('echo "0 amplicons:" > {}_output-0.txt\n'.format(species_name), shell=True)
+            subprocess.run('echo "1 amplicon:" > {}_output-1.txt\n'.format(species_name), shell=True)
+            subprocess.run('echo "2 or more amplicons:" > {}_output-2.txt\n'.format(species_name), shell=True)
 
-        if not target:
-            outfile.write("\t{} -max {} --primers {}:{} $f | head -1 >> $OUTFILE\n".format(
+            outfile.write("while read f; do\n")
+            outfile.write("\tWC=`{} -max {} --primers {}:{} $f | wc -l`".format(
                 neben_path,
                 amp_size+50,
                 primer[0],
                 primer[1]))
-            outfile.write("done <$FILE\n")
+            outfile.write("\tNUM_AMPS=(${WC// / })\n")
+            outfile.write("\tBASENAME=$(basename $f)\n")
+            outfile.write("\tif [ $NUM_AMPS -eq 0 ]\n\tthen\n")
+            outfile.write("\t\t echo $BASENAME >> $OUTFILE-0.txt\n")
+            outfile.write("\telif [ $NUM_AMPS -eq 1 ]\n\tthen\n")
+            outfile.write("\t\t echo $BASENAME >> $OUTFILE-1.txt\n")
+            outfile.write("\telse\n")
+            outfile.write("\t\t echo $BASENAME >> $OUTFILE-2.txt\n")
+            outfile.write("\tfi\n")
+            
+
+        if not target:
+            
+            outfile.write("while read f; do\n")
+            outfile.write("\t{} -max {} --primers {}:{} $f | head -1 >> $OUTFILE.txt\n".format(
+                neben_path,
+                amp_size+50,
+                primer[0],
+                primer[1]))
+
+        outfile.write("done <$FILE\n")
 
     return outfile_name
 
@@ -163,8 +187,16 @@ def _make_results_job(job_num, target, groups, num_files):
         outfile.write("#SBATCH --dependency=afterok:{}\n".format(job_num))
         outfile.write("\n")
 
+        results_name = "database_amplicon_results.txt"
+
+        if target:
+            species_name = list(groups.keys())[0].split("/")[-1]
+            outfile.write("for i in {0..2}; do\n")
+            outfile.write("\tcat tmp/{}_output-$i >> {}\n".format(species_name, results_name))
+            outfile.write('\techo >> {}\n'.format(results_name))
+            outfile.write("done\n")
+
         if not target:
-            results_name = "database_amplicon_results.txt"
             output_files = []
             for directory in groups:
                 species_name = directory.split("/")[-1]
