@@ -181,8 +181,8 @@ def _make_results_job(job_num, target, groups, num_files):
     with open(outfile_name, "w") as outfile:
         outfile.write("#!/bin/bash\n")
         outfile.write("#SBATCH --job-name=database_amplicon_results\n")
-        outfile.write("#SBATCH --time=30:00\n")
-        outfile.write("#SBATCH --mem=10000\n")
+        outfile.write("#SBATCH --time=20:00\n")
+        outfile.write("#SBATCH --mem=2000\n")
         outfile.write("#SBATCH --dependency=afterok:{}\n".format(job_num))
         outfile.write("\n")
 
@@ -197,15 +197,19 @@ def _make_results_job(job_num, target, groups, num_files):
 
             species_name = path.split("/")[-1]
             outfile.write("for i in {0..2}; do\n")
-            outfile.write("\tWC=`wc -l tmp/{}_output-$i`".format(species_name))
-            outfile.write("\tNUM_LINES=${WC// / })\n")
-            outfile.write('\tPERCENT=`echo "scale = 2; ($NUM_LINES / {}) * 100" | bc`\n'.format(num_files))
+            outfile.write("\tWC=`wc -l tmp/{}_output-$i.txt`\n".format(species_name))
+            outfile.write("\tNUM_LINES=(${WC// / })\n")
+            outfile.write('\tPERCENT=`echo "scale = 4; ($NUM_LINES / {}) * 100" | bc`\n'.format(num_files))
             outfile.write("\tif [ $i -eq 2 ]\n\tthen\n")
-            outfile.write('\t\tprintf "$i or more Amplicons\\t$NUM_LINES/{}\\t$PERCENT%%\\n" >> {}\n'.format(num_files, results_name))
+            #outfile.write('\t\tprintf "$i or more Amplicons\\t$NUM_LINES/{}\\t$PERCENT%%\\n" >> {}\n'.format(num_files, results_name))
+            outfile.write('\t\tprintf "$i or more Amplicons\\t$NUM_LINES/{}\\t%.2f%%\\n" $PERCENT >> {}\n'.format(num_files, results_name))
             outfile.write("\telse\n")
-            outfile.write('\tprintf "$i Amplicons\\t\\t$NUM_LINES/{}\\t$PERCENT%%\\n" >> {}\n'.format(num_files, results_name))
+            outfile.write('\t\tprintf "$i Amplicons\\t\\t$NUM_LINES/{}\\t%.2f%%\\n" $PERCENT >> {}\n'.format(num_files, results_name))
             outfile.write("\tfi\n")
             outfile.write("done\n")
+            outfile.write("\n")
+
+            outfile.write("echo >> {}".format(results_name))
             outfile.write("\n")
             
             outfile.write("for i in {0..2}; do\n")
@@ -249,8 +253,8 @@ def _make_results_job(job_num, target, groups, num_files):
             outfile.write("\tWC=`wc -l ${OUTPUT_FILES[$i]}`\n")
             outfile.write("\tNUM_LINES=(${WC// / })\n")
             outfile.write("\tif [ $NUM_LINES -gt 0 ]\n\tthen\n")
-            outfile.write('\t\tPERCENT=`echo "scale = 2; ($NUM_LINES / ${NUM_FILES[$i]}) * 100" | bc`\n')
-            outfile.write('\t\tprintf "${{SPECIES[$i]}}\\t$NUM_LINES/${{NUM_FILES[$i]}}\\t$PERCENT%%\\n" >> {}\n'.format(results_name))
+            outfile.write('\t\tPERCENT=`echo "scale = 4; ($NUM_LINES / ${NUM_FILES[$i]}) * 100" | bc`\n')
+            outfile.write('\t\tprintf "${{SPECIES[$i]}}\\t$NUM_LINES/${{NUM_FILES[$i]}}\\t%.2f%%\\n" $PERCENT >> {}\n'.format(results_name))
             outfile.write("\tfi\n")
             outfile.write("done\n")
 
