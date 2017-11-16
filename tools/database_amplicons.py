@@ -146,8 +146,8 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
             outfile.write("while read F; do\n")
             outfile.write("\tPARENT_ABS=`dirname $F`\n")
             outfile.write("\tPARENT=`basename $PARENT_ABS`\n")
-            outfile.write("\tOUTFILE=$PARENT_output\n")
-            outfile.write("\t{} -m {} -f {} -r {} -g $F | head -1 >> $OUTFILE.txt\n".format(
+            outfile.write('\tOUTFILE=tmp/"$PARENT"_output.txt\n')
+            outfile.write("\t{} -m {} -f {} -r {} -g $F | head -1 >> $OUTFILE\n".format(
                 neben_path,
                 amp_size+50,
                 primer[0],
@@ -211,14 +211,16 @@ def _make_results_job(job_num, target, groups, num_files, species_names):
             # Make array of species names
             outfile.write("SPECIES=(")
             for file in output_files:
-                outfile.write(file[0] + " ")
+                #outfile.write(file[0] + " ")
+                outfile.write('"{}" '.format(file[0]))
             outfile.write(")\n")
             outfile.write("\n")
 
             # Make array of output file names for each species
             outfile.write("OUTPUT_FILES=(")
             for file in output_files:
-                outfile.write(file[1] + " ")
+                #outfile.write(file[1] + " ")
+                outfile.write('"{}" '.format(file[1]))
             outfile.write(")\n")
             outfile.write("\n")
 
