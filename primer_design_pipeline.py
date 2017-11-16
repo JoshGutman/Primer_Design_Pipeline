@@ -184,8 +184,9 @@ def amplicons_blast_db(combos):
             combo.non_target_amplicons = len(lines)
         
     for combo in combos:
-        subprocess.run("{}/Primer_Design_Pipeline/neben_linux_64 -max 500 "
-                       "--primers {}:{} {} > {}".format(
+        # Static size of 500???
+        subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 -m 500 "
+                       "-f {} -r {} -g {} > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
                            combo.reverse.sequence,
@@ -194,8 +195,8 @@ def amplicons_blast_db(combos):
                        shell=True)
         _num_amplicons(combo, True)
         
-        subprocess.run("{}/Primer_Design_Pipeline/neben_linux_64 -max 500 "
-                       "--primers {}:{} {} > {}".format(
+        subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 -m 500 "
+                       "-f {} -r {} -g {} > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
                            combo.reverse.sequence,
