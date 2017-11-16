@@ -129,11 +129,11 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
             outfile.write("\tNUM_AMPS=(${WC// / })\n")
             outfile.write("\tBASENAME=$(basename $F)\n")
             outfile.write("\tif [ $NUM_AMPS -eq 0 ]\n\tthen\n")
-            outfile.write("\t\t echo $BASENAME >> {}_output-0.txt\n".format(species_name))
+            outfile.write("\t\t echo $BASENAME >> tmp/{}_output-0.txt\n".format(species_name))
             outfile.write("\telif [ $NUM_AMPS -eq 1 ]\n\tthen\n")
-            outfile.write("\t\t echo $BASENAME >> {}_output-1.txt\n".format(species_name))
+            outfile.write("\t\t echo $BASENAME >> tmp/{}_output-1.txt\n".format(species_name))
             outfile.write("\telse\n")
-            outfile.write("\t\t echo $BASENAME >> {}_output-2.txt\n".format(species_name))
+            outfile.write("\t\t echo $BASENAME >> tmp/{}_output-2.txt\n".format(species_name))
             outfile.write("\tfi\n")
             
 
@@ -202,7 +202,7 @@ def _make_results_job(job_num, target, groups, num_files, species_names):
         if not target:
             output_files = []
             for species in species_names:
-                output_files.append((species, "tmp/{}_output.txt".format(species_name)))
+                output_files.append((species, "tmp/{}_output.txt".format(species)))
 
             # Make array of species names
             outfile.write("SPECIES=(")
