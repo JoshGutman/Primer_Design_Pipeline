@@ -36,7 +36,7 @@ def get_combos(primers, lower, upper):
             combo_range = abs(forward.value - reverse.value)
             if lower <= combo_range <= upper:
                 temp_combo = Combo(forward, reverse)
-                temp_combo.set_amplicon()
+                temp_combo.set_amplicon(upper-lower)
                 out.append(temp_combo)
     return out
 
@@ -279,7 +279,7 @@ class Combo:
     def increment_combo_id(cls):
         cls.combo_id += 1
 
-    def set_amplicon(self):
+    def set_amplicon(self, amp_size):
         """Sets the amplicon of a Combo object.
 
         Runs neben to find the amplicon(s) of a Combo object. The output of
@@ -295,14 +295,13 @@ class Combo:
             Mutates the Combo.amplicon instance variable.
 
         Notes:
-            The max size of an amplicon is set to 500.
-
             If no amplicon is found, "None found" is assigned instead.
 
         """
-        subprocess.run("{}/Primer_Design_Pipeline/neben_linux_64 -max 500 "
-                       "--primers {}:{} {} > {}".format(
+        subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 -m {} "
+                       "-f {} -r {} -g {} > {}".format(
                            Constants.project_dir,
+                           amp_size,
                            self.forward.sequence,
                            self.reverse.sequence,
                            Constants.reference_fasta,
@@ -316,8 +315,9 @@ class Combo:
             self.amplicon = "None found"
             self.amp_len = 0
         else:
-            self.amplicon = out.split()[3]
-            self.amp_len = len(self.amplicon)
+            fields = out.split()
+            self.amplicon = fields[1]
+            self.amp_len = fields[0]
 
     def get_order_info(self):
         """Gets the ordering info for the forward and reverse primers.
