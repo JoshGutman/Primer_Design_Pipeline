@@ -61,14 +61,18 @@ def _get_files(directory):
 
 def _split_files(files):
     out = []
-    species = set()
+    species = {}
     
     time_limit = 600
     group = []
     time_total = 0
 
     for file in files:
-        species.add(os.path.dirname(file).split("/")[-1])
+        species_name = os.path.dirname(file).split("/")[-1])
+        if species_name in species:
+            species[species_name] += 1
+        else:
+            species[species_name] = 1
         if time_total >= time_limit:
             out.append(group)
             group = []
@@ -221,7 +225,7 @@ def _make_results_job(job_num, target, groups, num_files, species_names):
             # Make array of number of files in database for each species
             outfile.write("NUM_FILES=(")
             for file in output_files:
-                outfile.write(str(num_files[file[0]]) + " ")
+                outfile.write(str(species_names[file[0]]) + " ")
             outfile.write(")\n")
             outfile.write("\n")
 
