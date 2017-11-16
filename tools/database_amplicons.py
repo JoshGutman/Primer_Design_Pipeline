@@ -68,7 +68,7 @@ def _split_files(files):
     time_total = 0
 
     for file in files:
-        species_name = os.path.dirname(file).split("/")[-1])
+        species_name = os.path.dirname(file).split("/")[-1]
         if species_name in species:
             species[species_name] += 1
         else:
