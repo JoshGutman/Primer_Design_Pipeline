@@ -105,7 +105,7 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
         outfile.write("#!/bin/bash\n")
         outfile.write("#SBATCH --job-name=database_amplicon\n")
         outfile.write("#SBATCH --array=0-{}\n".format(num_jobs-1))
-        outfile.write("#SBATCH --time=20:00\n")
+        outfile.write("#SBATCH --time=30:00\n")
         outfile.write("#SBATCH --mem=5000\n")
         outfile.write("\n")
 
