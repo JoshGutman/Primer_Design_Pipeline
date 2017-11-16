@@ -49,7 +49,7 @@ def _get_neben_path():
     tools_dir = os.path.dirname(os.path.abspath(__file__))
     main_dir = os.path.join(tools_dir, os.pardir)
     pdp_dir = os.path.join(main_dir, "Primer_Design_Pipeline")
-    return os.path.join(pdp_dir, "neben_linux_64")
+    return os.path.join(pdp_dir, "nv2_linux_64")
 
 
 def _get_files(directory):
@@ -88,9 +88,7 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
 
     outfile_name = "database_amplicon_job.sh"
 
-    num_jobs = 0
-    for group in groups:
-        num_jobs += len(group)
+    num_jobs = len(groups)
 
     '''
     time = 10 * num_jobs
@@ -129,7 +127,7 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
                 primer[0],
                 primer[1]))
             outfile.write("\tNUM_AMPS=(${WC// / })\n")
-            outfile.write("\tBASENAME=$(basename $f)\n")
+            outfile.write("\tBASENAME=$(basename $F)\n")
             outfile.write("\tif [ $NUM_AMPS -eq 0 ]\n\tthen\n")
             outfile.write("\t\t echo $BASENAME >> {}_output-0.txt\n".format(species_name))
             outfile.write("\telif [ $NUM_AMPS -eq 1 ]\n\tthen\n")
