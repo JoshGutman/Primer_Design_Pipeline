@@ -33,11 +33,12 @@ def get_combos(primers, lower, upper):
     # Find combinations of Primers that fall within lower - upper
     for forward in forwards:
         for reverse in reverses:
-            combo_range = abs(forward.value - reverse.value)
-            if lower <= combo_range <= upper:
-                temp_combo = Combo(forward, reverse)
-                temp_combo.set_amplicon(upper-lower)
-                out.append(temp_combo)
+            if forward.value < reverse.value:
+                combo_range = abs(forward.value - reverse.value)
+                if lower <= combo_range <= upper:
+                    temp_combo = Combo(forward, reverse)
+                    temp_combo.set_amplicon(upper-lower)
+                    out.append(temp_combo)
     return out
 
 
