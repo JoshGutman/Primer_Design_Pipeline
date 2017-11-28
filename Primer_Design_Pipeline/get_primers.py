@@ -9,7 +9,7 @@ from .setup import Constants, FileNames
 # Takes in primer3_template.txt, target.fasta, lower bound, upper bound
 # Returns (seqs, target mis-hits, non-target hits)
 #         > All dicts with primer name as key, mis-hits and hits have values of lists of tuples with (ID, length)
-def get_primers(config_file, target, directory, lower, upper):
+def get_primers(config_file, target, directory, lower, upper, temp_args):
     """Get primers and primer metadata.
 
     Get primers using primer3. Then find the mis-hits and non-target hits of
@@ -20,8 +20,9 @@ def get_primers(config_file, target, directory, lower, upper):
         config_file (str): Path to primer3 config file.
         target (str): Path to target genome.
         directory (str): Path to directory with reference .fasta files.
-        lower (int): lower bound of amplicon size.
-        upper (int): upper bound of amplicon size.
+        lower (int): Lower bound of amplicon size.
+        upper (int): Upper bound of amplicon size.
+        temp_args (:obj:`list` of :obj:`float`): List of ol_conc,na_conc,mg_conc
 
     Returns:
         tuple: Tuple consisting of primers, mis-hits, and non-target hits.
@@ -52,7 +53,7 @@ def get_primers(config_file, target, directory, lower, upper):
 
 
 # Modify primer3_template.txt to prepare for primer3_core
-def modify_input_file(config_file, target, lower, upper):
+def modify_input_file(config_file, target, lower, upper, temp_args):
 
     # Get marker name and sequence of target.fasta
     with open(target, "U") as infile:
@@ -69,6 +70,18 @@ def modify_input_file(config_file, target, lower, upper):
                 config_out.write("SEQUENCE_TEMPLATE={}\n".format(sequence))
             elif line.startswith("PRIMER_PRODUCT_SIZE_RANGE"):
                 config_out.write("PRIMER_PRODUCT_SIZE_RANGE={}-{}\n".format(lower, upper))
+            elif line.startswith("PRIMER_SALT_MONOVALENT"):
+                config_out.write("PRIMER_SALT_MONOVALENT={}\n".format(temp_args[1]))
+            elif line.startswith("PRIMER_INTERNAL_SALT_MONOVALENT"):
+                config_out.write("PRIMER_INTERNAL_SALT_MONOVALENT={}\n".format(temp_args[1]))
+            elif line.startswith("PRIMER_SALT_DIVALENT"):
+                config_out.write("PRIMER_SALT_DIVALENT={}\n".format(temp_args[2]))
+            elif line.startswith("PRIMER_INTERNAL_SALT_DIVALENT"):
+                config_out.write("PRIMER_INTERNAL_SALT_DIVALENT=}\n".format(temp_args[2]))
+            elif line.startswith("PRIMER_DNA_CONC"):
+                config_out.write("PRIMER_DNA_CONC={}".format(temp_args[0]))
+            elif line.startswith("PRIMER_INTERNAL_DNA_CONC"):
+                config_out.write("PRIMER_INTERNAL_DNA_CONC={}".format(temp_args[0]))
             elif line.startswith("PRIMER_NUM_RETURN"):
                 pass
             else:
@@ -175,7 +188,6 @@ def get_bad_hits(primers):
     return mis_hits, non_target_hits
 
 
-
 class Primer:
 
     def __init__(self, original_name, sequence, value):
@@ -236,22 +248,6 @@ class Primer:
         self.ordering_info["sequence_tail"] = sequence_tail
         self.ordering_info["to_order"] = to_order
         self.ordering_info["tm"] = str(self.tm[2])
-
-        '''
-        lst = [
-            target,
-            primer_name,
-            combined_name,
-            final_name,
-            sequence_tail,
-            to_order,
-            str(self.tm[2]),   #Tm
-            amplicon,   #amplicon
-            str(len(amplicon)),  #amplicon length
-            str(len(amplicon) + 36) # amplicon length + UT length
-            ]
-        self.ordering_info = ";".join(lst)
-        '''
 
     def __hash__(self):
         return hash(self.name + self.sequence)
