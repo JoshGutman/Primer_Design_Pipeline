@@ -77,7 +77,7 @@ def modify_input_file(config_file, target, lower, upper, temp_args):
             elif line.startswith("PRIMER_SALT_DIVALENT"):
                 config_out.write("PRIMER_SALT_DIVALENT={}\n".format(temp_args[2]))
             elif line.startswith("PRIMER_INTERNAL_SALT_DIVALENT"):
-                config_out.write("PRIMER_INTERNAL_SALT_DIVALENT=}\n".format(temp_args[2]))
+                config_out.write("PRIMER_INTERNAL_SALT_DIVALENT={}\n".format(temp_args[2]))
             elif line.startswith("PRIMER_DNA_CONC"):
                 config_out.write("PRIMER_DNA_CONC={}".format(temp_args[0]))
             elif line.startswith("PRIMER_INTERNAL_DNA_CONC"):
