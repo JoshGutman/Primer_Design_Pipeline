@@ -62,7 +62,7 @@ def run_blast(target, reduced_name):
     """
     subprocess.run('blastn -task blastn -query {} -db {} -out {}.blast.out '
                    '-dust no -num_alignments 20000 -outfmt "7 std sseq"'
-                   .format(target, Constants.combined_seqs, reduced_name),
+                   .format(target, Constants.target_db, reduced_name),
                    shell=True)
 
     # Sort output in place and get rid of duplicates
