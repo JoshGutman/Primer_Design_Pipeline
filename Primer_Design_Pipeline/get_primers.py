@@ -40,7 +40,7 @@ def get_primers(config_file, target, directory, lower, upper, temp_args):
 
 
     """
-    modify_input_file(config_file, target, lower, upper)
+    modify_input_file(config_file, target, lower, upper, temp_args)
     subprocess.run("primer3_core -output={} < {}".format(
         FileNames.primer3_output, FileNames.modified_config_file),
                    shell=True)
