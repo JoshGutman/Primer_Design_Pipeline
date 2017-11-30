@@ -71,8 +71,8 @@ def modify_input_file(config_file, target, lower, upper, temp_args):
             elif line.startswith("PRIMER_PRODUCT_SIZE_RANGE"):
                 config_out.write("PRIMER_PRODUCT_SIZE_RANGE={}-{}\n".format(lower, upper))
 
-            elif line.startswith("PRIMER_SALT_MONOVALENT"):
-                config_out.write("PRIMER_SALT_MONOVALENT={}\n".format(temp_args[1]))
+##            elif line.startswith("PRIMER_SALT_MONOVALENT"):
+##                config_out.write("PRIMER_SALT_MONOVALENT={}\n".format(temp_args[1]))
 ##            elif line.startswith("PRIMER_INTERNAL_SALT_MONOVALENT"):
 ##                config_out.write("PRIMER_INTERNAL_SALT_MONOVALENT={}\n".format(temp_args[1]))
 ##            elif line.startswith("PRIMER_SALT_DIVALENT"):
