@@ -165,7 +165,7 @@ def format_combos(combos):
             attributes["tm"].append(str(primer.tm))
         attributes["amp_len"].append(str(combo.amp_len))
         attributes["target_amp"].append(str(combo.target_amplicons))
-        attributes["target_amp"].append(str(combo.non_target_amplicons))
+        attributes["non_target_amp"].append(str(combo.non_target_amplicons))
         attributes["score"].append(str(combo.score))
 
     lengths = []
