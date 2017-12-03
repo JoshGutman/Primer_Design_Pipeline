@@ -57,7 +57,7 @@ func main() {
 
 	for _, genome := range genomes {
 		for _, f := range forwards {
-		        wg.Add(1)
+			wg.Add(1)
 			go func(fSeq string, g Genome) {
 				defer wg.Done()
 				fChan <- findMatches(regexp.MustCompile(fSeq), &g)
@@ -65,7 +65,7 @@ func main() {
 		}
 
 		for _, r := range reverses {
-		        wg.Add(1)
+			wg.Add(1)
 			go func(rSeq string, g Genome) {
 				defer wg.Done()
 				rChan <- findMatches(regexp.MustCompile(rSeq), &g)
@@ -126,7 +126,8 @@ func findAmpliconsInRange(forwardMatches, reverseMatches []Match, size, reverseL
 
 	for _, fm := range forwardMatches {
 		for _, rm := range reverseMatches {
-			if (rm.index - fm.index + reverseLen) <= size {
+			ampLen := (rm.index - fm.index + reverseLen)
+			if ampLen <= size && ampLen > 0 {
 				out = append(out, Amplicon{fm.genome, fm.index, rm.index, ""})
 			}
 		}
