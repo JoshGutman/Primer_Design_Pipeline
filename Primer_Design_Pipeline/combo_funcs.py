@@ -308,6 +308,9 @@ class Combo:
                            Constants.reference_fasta,
                            FileNames.neben_output),
                        shell=True)
+        print("Forward: {}".format(self.forward.sequence))
+        print("Reverse: {}".format(self.reverse.sequence))
+        print()
 
         with open(FileNames.neben_output, "rU") as infile:
             out = infile.readline()
