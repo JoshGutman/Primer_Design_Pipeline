@@ -118,6 +118,7 @@ def remove_excess_files(directories):
     # Get rid of all .fasta files from multifasta in outer-most directory
     for directory in directories:
         #os.remove(directory + ".fasta")
+        pass
 
     try:
         os.remove("primer_conflicts_blast.out")
