@@ -37,7 +37,7 @@ def get_combos(primers, lower, upper):
                 combo_range = abs(forward.value - reverse.value)
                 if lower <= combo_range <= upper:
                     temp_combo = Combo(forward, reverse)
-                    temp_combo.set_amplicon(upper-lower)
+                    temp_combo.set_amplicon(upper)
                     out.append(temp_combo)
     return out
 
@@ -308,9 +308,6 @@ class Combo:
                            Constants.reference_fasta,
                            FileNames.neben_output),
                        shell=True)
-        print("Forward: {}".format(self.forward.sequence))
-        print("Reverse: {}".format(self.reverse.sequence))
-        print()
 
         with open(FileNames.neben_output, "rU") as infile:
             out = infile.readline()
