@@ -77,17 +77,17 @@ def modify_input_file(config_file, target, lower, upper, temp_args):
                 config_out.write("PRIMER_PRODUCT_SIZE_RANGE={}-{}\n".format(lower, upper))
 
             elif line.startswith("PRIMER_SALT_MONOVALENT"):
-                config_out.write("PRIMER_SALT_MONOVALENT={}\n".format(monovalent))
+                config_out.write("PRIMER_SALT_MONOVALENT={}\n".format(format(monovalent, ".15f")))
             elif line.startswith("PRIMER_INTERNAL_SALT_MONOVALENT"):
-                config_out.write("PRIMER_INTERNAL_SALT_MONOVALENT={}\n".format(monovalent))
+                config_out.write("PRIMER_INTERNAL_SALT_MONOVALENT={}\n".format(format(monovalent, ".15f")))
             elif line.startswith("PRIMER_SALT_DIVALENT"):
                 config_out.write("PRIMER_SALT_DIVALENT={}\n".format(temp_args[2]))
             elif line.startswith("PRIMER_INTERNAL_SALT_DIVALENT"):
                 config_out.write("PRIMER_INTERNAL_SALT_DIVALENT={}\n".format(temp_args[2]))
             elif line.startswith("PRIMER_DNA_CONC"):
-                config_out.write("PRIMER_DNA_CONC={}\n".format(int(temp_args[0])*1000))
+                config_out.write("PRIMER_DNA_CONC={}\n".format(format(float(temp_args[0])*1000), ".15f"))
             elif line.startswith("PRIMER_INTERNAL_DNA_CONC"):
-                config_out.write("PRIMER_INTERNAL_DNA_CONC={}\n".format(int(temp_args[0])*1000))
+                config_out.write("PRIMER_INTERNAL_DNA_CONC={}\n".format(format(float(temp_args[0])*1000), ".15f"))
             elif line.startswith("PRIMER_SALT_CORRECTIONS"):
                 config_out.write("PRIMER_SALT_CORRECTIONS=2\n")
             elif line.startswith("PRIMER_TM_FORMULA"):
