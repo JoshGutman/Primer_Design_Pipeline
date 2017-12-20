@@ -186,7 +186,7 @@ def amplicons_blast_db(combos):
         
     for combo in combos:
         # Static size of 500???
-        subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 -m 500 "
+        subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 "
                        "-f {} -r {} -g {} > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
@@ -196,7 +196,7 @@ def amplicons_blast_db(combos):
                        shell=True)
         _num_amplicons(combo, True)
         
-        subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 -m 500 "
+        subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 "
                        "-f {} -r {} -g {} > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
