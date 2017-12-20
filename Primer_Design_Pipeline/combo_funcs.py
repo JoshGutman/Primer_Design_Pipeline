@@ -77,6 +77,77 @@ def score_combos(primers, combos):
         for i, primer in enumerate(primers):
             primer.score += i
 
+    # num degens
+    items = set()
+    for primer in primers:
+        items.add(primer.num_degens)
+    items_list = list(items)
+    items_list.sort()
+    for primer in primers:
+        primer.score += items_list.index(primer.num_degens)
+
+
+    # Max mis-hit ID
+    items = set()
+    for primer in primers:
+        items.add(primer.max_mis_hit[0])
+    items_list = list(items)
+    items_list.sort()
+    for primer in primers:
+        primer.score += items_list.index(primer.max_mis_hit[0])
+
+
+    # Max mis-hit length
+    items = set()
+    for primer in primers:
+        items.add(primer.max_mis_hit[1])
+    items_list = list(items)
+    items_list.sort()
+    for primer in primers:
+        primer.score += items_list.index(primer.max_mis_hit[1])
+
+
+    # Max non-target hit ID
+    items = set()
+    for primer in primers:
+        items.add(primer.max_non_target_hit[0])
+    items_list = list(items)
+    items_list.sort()
+    for primer in primers:
+        primer.score += items_list.index(primer.max_non_target_hit[0])
+
+
+    # Max non-target hit length
+    items = set()
+    for primer in primers:
+        items.add(primer.max_non_target_hit[1])
+    items_list = list(items)
+    items_list.sort()
+    for primer in primers:
+        primer.score += items_list.index(primer.max_non_target_hit[1])
+
+
+    # Number of amplicons in targets
+    items = set()
+    for combo in combo:
+        items.add(combo.target_amplicons)
+    items_list = list(items)
+    items_list.sort(reverse=True) # More target amplicons is better
+    for combo in combos:
+        combo.score += items_list.index(combo.target_amplicons)
+    
+
+    # Number of amplicons in non-targets
+    items = set()
+    for combo in combo:
+        items.add(combo.non_target_amplicons)
+    items_list = list(items)
+    items_list.sort()
+    for combo in combos:
+        combo.score += items_list.index(combo.non_target_amplicons)
+
+
+    '''
     # Number of degens
     primers.sort(key=lambda primer: primer.num_degens)
     _add_score()
@@ -96,6 +167,7 @@ def score_combos(primers, combos):
     # Max non-target hit length
     primers.sort(key=lambda primer: primer.max_non_target_hit[1])
     _add_score()
+    '''
 
     for combo in combos:
         combo.score += combo.forward.score + combo.reverse.score
