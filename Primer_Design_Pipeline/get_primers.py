@@ -62,6 +62,11 @@ def modify_input_file(config_file, target, lower, upper, temp_args):
             sequence = str(record.seq)
 
     # Modify primer3_template.txt and save new version as config_modified.txt
+    if temp_args[1] == 0:
+        monovalent = .0000000000001
+    else:
+        monovalent = temp_args[1]
+
     with open(config_file, "U") as config_in, open(FileNames.modified_config_file, "w") as config_out:
         for line in config_in:
             if line.startswith("SEQUENCE_ID"):
@@ -71,22 +76,22 @@ def modify_input_file(config_file, target, lower, upper, temp_args):
             elif line.startswith("PRIMER_PRODUCT_SIZE_RANGE"):
                 config_out.write("PRIMER_PRODUCT_SIZE_RANGE={}-{}\n".format(lower, upper))
 
-##            elif line.startswith("PRIMER_SALT_MONOVALENT"):
-##                config_out.write("PRIMER_SALT_MONOVALENT={}\n".format(temp_args[1]))
-##            elif line.startswith("PRIMER_INTERNAL_SALT_MONOVALENT"):
-##                config_out.write("PRIMER_INTERNAL_SALT_MONOVALENT={}\n".format(temp_args[1]))
+            elif line.startswith("PRIMER_SALT_MONOVALENT"):
+                config_out.write("PRIMER_SALT_MONOVALENT={}\n".format(monovalent)
+            elif line.startswith("PRIMER_INTERNAL_SALT_MONOVALENT"):
+                config_out.write("PRIMER_INTERNAL_SALT_MONOVALENT={}\n".format(monovalent)
             elif line.startswith("PRIMER_SALT_DIVALENT"):
                 config_out.write("PRIMER_SALT_DIVALENT={}\n".format(temp_args[2]))
-##            elif line.startswith("PRIMER_INTERNAL_SALT_DIVALENT"):
-##                config_out.write("PRIMER_INTERNAL_SALT_DIVALENT={}\n".format(temp_args[2]))
-##            elif line.startswith("PRIMER_DNA_CONC"):
-##                config_out.write("PRIMER_DNA_CONC={}\n".format(int(temp_args[0])*1000))
-##            elif line.startswith("PRIMER_INTERNAL_DNA_CONC"):
-##                config_out.write("PRIMER_INTERNAL_DNA_CONC={}\n".format(int(temp_args[0])*1000))
-##            elif line.startswith("PRIMER_SALT_CORRECTIONS"):
-##                config_out.write("PRIMER_SALT_CORRECTIONS=2\n")
-##            elif line.startswith("PRIMER_TM_FORMULA"):
-##                config_out.write("PRIMER_TM_FORMULA=1\n")
+            elif line.startswith("PRIMER_INTERNAL_SALT_DIVALENT"):
+                config_out.write("PRIMER_INTERNAL_SALT_DIVALENT={}\n".format(temp_args[2]))
+            elif line.startswith("PRIMER_DNA_CONC"):
+                config_out.write("PRIMER_DNA_CONC={}\n".format(int(temp_args[0])*1000))
+            elif line.startswith("PRIMER_INTERNAL_DNA_CONC"):
+                config_out.write("PRIMER_INTERNAL_DNA_CONC={}\n".format(int(temp_args[0])*1000))
+            elif line.startswith("PRIMER_SALT_CORRECTIONS"):
+                config_out.write("PRIMER_SALT_CORRECTIONS=2\n")
+            elif line.startswith("PRIMER_TM_FORMULA"):
+                config_out.write("PRIMER_TM_FORMULA=1\n")
                 
             elif line.startswith("PRIMER_NUM_RETURN"):
                 pass
