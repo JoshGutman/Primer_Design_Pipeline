@@ -129,7 +129,7 @@ def score_combos(primers, combos):
 
     # Number of amplicons in targets
     items = set()
-    for combo in combo:
+    for combo in combos:
         items.add(combo.target_amplicons)
     items_list = list(items)
     items_list.sort(reverse=True) # More target amplicons is better
@@ -139,7 +139,7 @@ def score_combos(primers, combos):
 
     # Number of amplicons in non-targets
     items = set()
-    for combo in combo:
+    for combo in combos:
         items.add(combo.non_target_amplicons)
     items_list = list(items)
     items_list.sort()
