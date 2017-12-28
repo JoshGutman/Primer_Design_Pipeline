@@ -1,6 +1,7 @@
 import subprocess
 import os
 import glob
+import sys
 from Bio import SeqIO
 
 from .setup import Constants, FileNames
@@ -41,7 +42,7 @@ def get_primers(config_file, target, directory, lower, upper, temp_args):
 
     """
     modify_input_file(config_file, target, lower, upper, temp_args)
-    subprocess.run("primer3_core -output={} < {}".format(
+    subprocess.run("primer3_core -error=error.txt -output={} < {}".format(
         FileNames.primer3_output, FileNames.modified_config_file),
                    shell=True)
     primers = get_primers_from_primer3()
@@ -101,6 +102,12 @@ def modify_input_file(config_file, target, lower, upper, temp_args):
 
 # Get the primers from primer3_core output
 def get_primers_from_primer3():
+
+    with open("error.txt", "rU") as error_file:
+        lines = error_file.readlines()
+        if len(lines) > 0:
+            raise Primer3Error("".join(lines))
+
 
     # Final output = YY_forward: sequence
     nums = {}   # key = PRIMER_LEFT_X, value = YY
@@ -271,3 +278,10 @@ class Primer:
 
     def __str__(self):
         return "{}: {}".format(self.name, self.sequence)
+
+
+
+class Primer3Error(Exception):
+    def __init__(self, message):
+        super().__init__("An error occurred while running Primer3:\n{}".format(message))
+    
