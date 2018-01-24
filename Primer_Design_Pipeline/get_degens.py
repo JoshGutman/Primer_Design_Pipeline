@@ -33,6 +33,8 @@ def get_degens(primers, genomes, ignore_percent):
 
     for primer in primers:
 
+        primer.sequence = primer.sequence.upper()
+
         if primer.orientation == "reverse":
             primer.sequence = _reverse_complement(primer.sequence)
 
@@ -120,7 +122,7 @@ def _get_code(bases):
             if `bases` is not sorted.
 
     """
-    bases_str = "".join(bases)
+    bases_str = "".join(bases).upper()
 
     degen_dict = {"AG": "R", "CT": "Y", "CG": "S",
                   "AT": "W", "GT": "K", "AC": "M",
