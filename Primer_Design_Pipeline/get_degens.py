@@ -92,12 +92,14 @@ def _reverse_complement(sequence):
              "Y":"R", "S":"S", "W":"W", "K":"M", "M":"K",
              "B":"V", "V":"B", "D":"H", "H":"D", "N":"N"}
 
+    sequence = sequence.upper()
+
     for i in range(len(sequence)-1, -1, -1):
         try:
             out += codes[sequence[i]]
         except KeyError:
             raise ValueError("Non-ACGT char encountered when attempting to "
-                             "compute reverse complement\nSequence:"
+                             "compute reverse complement.\nSequence:"
                              " {}".format(sequence))
 
     return out
