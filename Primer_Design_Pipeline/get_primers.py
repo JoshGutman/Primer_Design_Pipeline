@@ -217,7 +217,7 @@ class Primer:
             self.name = "{}_reverse".format(value)
             self.orientation = "reverse"
 
-        self.sequence = sequence
+        self.sequence = sequence.upper()
         self.value = int(value)
         self.length = len(sequence)
         self.num_degens = self.count_degens()
@@ -231,7 +231,7 @@ class Primer:
         self.score = 0
 
     def set_sequence(self, new_seq):
-        self.sequence = new_seq
+        self.sequence = new_seq.upper()
         self.length = len(self.sequence)
         self.num_degens = self.count_degens()
 
