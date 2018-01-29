@@ -23,6 +23,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
     reference_fasta = os.path.abspath(reference_fasta)
     config_file = os.path.abspath(config_file)
 
+    print("Initializing values")
     targets = init(target_file, directory, config_file, target_list,
                    reference_fasta, project_dir)
 
@@ -42,55 +43,74 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         os.chdir(dir_name)
         config_file = os.path.abspath(os.path.basename(config_file))
 
-
+        print("Getting primers for {}...".format(target))
         primers, mis_hits, non_target_hits = get_primers(config_file, target, directory, lower, upper, [oligo_conc, na_conc, mg_conc])
 
         for primer in primers:
             all_primers.append(primer)
 
+        print("Getting genomes for {}...".format(target))
         genomes = get_genomes(target)
+
+        print("Getting degens for {}...".format(target))
         get_degens(primers, genomes, ignore)
 
+        print("Blasting primers against selves...")
         blast_all_primers("alignment_blast_in.fasta")
+        print("Finding primer conflicts...")
         conflicts = find_primer_conflicts("alignment_blast_in.fasta")
+        print("Outputting conflicts...")
         output_conflicts(conflicts)
 
+
+        print("Getting combos for {}".format(target))
         combos = get_combos(primers, lower, upper)
 
         for combo in combos:
+
+            print("Calculating combo TMs")
             combo.forward.tm = get_tm(combo.forward.sequence,
                                       oligo_conc, na_conc, mg_conc)
             combo.reverse.tm = get_tm(combo.reverse.sequence,
                                       oligo_conc, na_conc, mg_conc)
 
+            print("Setting combo ordering infos")
             combo.forward.set_ordering_info(target, combo.amplicon)
             combo.reverse.set_ordering_info(target, combo.amplicon)
 
             combo.target = target
             all_combos.append(combo)
 
+        print("Calculating combo amplicons")
         amplicons_blast_db(combos)
 
+        print("Scoring combos locally")
         score_combos(primers, combos)
 
+        print("Outputting combos")
         output_combos(combos, "candidate_primers.txt")
         best_combos.append(choose_best_combos(combos))
 
         os.chdir("..")
 
+    print("Scoring combos universally")
     score_combos(all_primers, all_combos)
 
+    print("Outputting combos")
     for combo in best_combos:
         output_combos(combo, "best_primers.txt")
 
+    print("Pickling combos")
     pickle_combos(all_combos)
 
     if multiplex:
+        print("Multiplex stuff")
         make_primer_fasta(multiplex, all_combos)
         all_conflicts = find_primer_conflicts("all_primers.fasta")
         output_conflicts(all_conflicts)
 
     if not keep:
+        print("Removing excess files")
         remove_excess_files(new_dirs)
 
 
