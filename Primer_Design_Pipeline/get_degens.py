@@ -53,7 +53,7 @@ def get_degens(primers, genomes, ignore_percent):
                         "T": 0}
 
                 for genome in genomes:
-                    base = index + i
+                    base = genome[index + i]
 
                     if (primer.sequence[i] != base
                             and base != "-" and
