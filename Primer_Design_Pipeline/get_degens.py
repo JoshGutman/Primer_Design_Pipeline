@@ -3,6 +3,8 @@
 Mutates the passed-in Primer objects.
 
 """
+import difflib
+
 def get_degens(primers, genomes, ignore_percent):
     """Calculates and sets the degens for a list of primers.
 
@@ -40,39 +42,39 @@ def get_degens(primers, genomes, ignore_percent):
 
         degens = [[primer.sequence[i]] for i in range(primer.length)]
 
-        for i in range(primer.length):
+        index = _find_index(primer.sequence, genomes)
 
-            snps = {"A": 0,
-                    "C": 0,
-                    "G": 0,
-                    "T": 0}
+        if index != -1:
+            for i in range(primer.length):
 
-            for genome in genomes:
-                if primer.orientation == "forward":
-                    base = genome[primer.value + i - 1]
-                elif primer.orientation == "reverse":
-                    base = genome[primer.value - primer.length + i]
+                snps = {"A": 0,
+                        "C": 0,
+                        "G": 0,
+                        "T": 0}
 
-                if (primer.sequence[i] != base
-                        and base != "-" and
-                        base not in degens[i]):
+                for genome in genomes:
+                    base = index + i
 
-                    snps[base] += 1
+                    if (primer.sequence[i] != base
+                            and base != "-" and
+                            base not in degens[i]):
 
-                    # Only consider degens if the base occurs in more
-                    # than (100 - ignore_percent) of genomes
-                    current_percentage = snps[base] / len(genomes)
-                    if (current_percentage) > (1 - ignore_percent):
-                        degens[i].append(base)
+                        snps[base] += 1
 
-        new_seq = ""
-        for degen in degens:
-            new_seq += _get_code(sorted(degen))
+                        # Only consider degens if the base occurs in more
+                        # than (100 - ignore_percent) of genomes
+                        current_percentage = snps[base] / len(genomes)
+                        if (current_percentage) > (1 - ignore_percent):
+                            degens[i].append(base)
 
-        if primer.orientation == "reverse":
-            new_seq = _reverse_complement(new_seq)
+            new_seq = ""
+            for degen in degens:
+                new_seq += _get_code(sorted(degen))
 
-        primer.set_sequence(new_seq)
+            if primer.orientation == "reverse":
+                new_seq = _reverse_complement(new_seq)
+
+            primer.set_sequence(new_seq)
 
 
 def _reverse_complement(sequence):
@@ -105,6 +107,33 @@ def _reverse_complement(sequence):
                              " {}".format(sequence))
 
     return out
+
+
+def _find_index(sequence, genomes):
+    """Finds the index that a sequence starts at.
+
+    Finds the index that a primer actually starts at in a genome. Sometimes a
+    bad target region is passed in to primer_design_pipeline, and the indeces
+    that primer3_core returns for primers are off by 1 or more. This function
+    should calculate the actual starting index of a primer within the MUSCLE-
+    aligned genomes.
+
+    Args:
+        sequence (str): Primer's sequence containing ACGT chars.
+        genomes (:obj:`list` of :obj:`str`): List of genomes.
+
+    Returns:
+        int: The index at which the primer starts at in genomes.
+
+    Notes:
+        Returns -1 if sequence does not occur in genomes.
+
+    """
+    for genome in genomes:
+        idx = genome.find(sequence)
+        if idx != -1:
+            return idx
+    return -1
 
 
 def _get_code(bases):
