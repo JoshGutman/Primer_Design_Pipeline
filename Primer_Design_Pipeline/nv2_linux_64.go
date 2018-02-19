@@ -45,72 +45,126 @@ func main() {
 
 	fasta := readFasta(*g)
 	genomes := makeGenomes(fasta)
-
+	maxLen := *m
+	
 	forwards := expandDegenerateSequence([]byte(*f))
 	reverses := expandDegenerateSequence([]byte(reverseComplement(*r)))
-	maxLen := *m
+	antiForwards := expandDegenerateSequence([]byte(reverseComplement(*f)))
+	antiReverses := expandDegenerateSequence([]byte(*r))
+	
 
 	fChan := make(chan []Match, (len(forwards)+1)*len(genomes))
 	rChan := make(chan []Match, (len(reverses)+1)*len(genomes))
+	afChan := make(chan []Match, (len(antiForwards)+1)*len(genomes))
+	arChan := make(chan []Match, (len(antiReverses)+1)*len(genomes))
 
+	chanArray := []chan []Match{fChan, rChan, afChan, arChan}
+	
 	var wg sync.WaitGroup
 
+	
 	for _, genome := range genomes {
+	
+	
+		
 		for _, f := range forwards {
 			wg.Add(1)
-			go func(fSeq string, g Genome) {
+			go func(seq string, g Genome) {
 				defer wg.Done()
-				fChan <- findMatches(regexp.MustCompile(fSeq), &g)
+				fChan <- findMatches(regexp.MustCompile(seq), &g)
 			}(string(f), genome)
 		}
 
 		for _, r := range reverses {
 			wg.Add(1)
-			go func(rSeq string, g Genome) {
+			go func(seq string, g Genome) {
 				defer wg.Done()
-				rChan <- findMatches(regexp.MustCompile(rSeq), &g)
+				rChan <- findMatches(regexp.MustCompile(seq), &g)
 			}(string(r), genome)
 		}
+		
+		for _, af := range antiForwards {
+			wg.Add(1)
+			go func(seq string, g Genome) {
+				defer wg.Done()
+				afChan <- findMatches(regexp.MustCompile(seq), &g)
+			}(string(af), genome)
+		}
+		
+		for _, ar := range antiReverses {
+			wg.Add(1)
+			go func(seq string, g Genome) {
+				defer wg.Done()
+				arChan <- findMatches(regexp.MustCompile(seq), &g)
+			}(string(ar), genome)
+		}
+		
 	}
 
 	wg.Wait()
 
-	close(fChan)
-	close(rChan)
-
-	matches := make(map[string][][]Match)
-	for _, g := range genomes {
-		var tmp1 [][]Match
-		var tmp2 []Match
-		matches[g.name] = tmp1
-		matches[g.name] = append(matches[g.name], tmp2)
-		matches[g.name] = append(matches[g.name], tmp2)
+	for i, _ := range chanArray {
+		close(chanArray[i])
 	}
-
-	for fmArray := range fChan {
-		for _, fm := range fmArray {
-			matches[fm.genome.name][0] = append(matches[fm.genome.name][0], fm)
+	
+	
+	fMatches := make(map[string][]Match)
+	rMatches := make(map[string][]Match)
+	afMatches := make(map[string][]Match)
+	arMatches := make(map[string][]Match)
+	
+	matchArray := []map[string][]Match{fMatches, rMatches, afMatches, arMatches}
+	
+	for i, _ := range chanArray {
+		for subArray := range chanArray[i] {
+			for _, match := range subArray {
+				matchArray[i][match.genome.name] = append(matchArray[i][match.genome.name], match)
+			}
 		}
 	}
 
-	for rmArray := range rChan {
-		for _, rm := range rmArray {
-			matches[rm.genome.name][1] = append(matches[rm.genome.name][1], rm)
-		}
-	}
-
+	
 	amps := make(map[string][]Amplicon)
-	for k, v := range matches {
-		amps[k] = findAmpliconsInRange(v[0], v[1], maxLen, len(*r))
+	antiAmps := make(map[string][]Amplicon)
+	var min int
+	
+	if len(fMatches) < len(rMatches) {
+		min = 0
+	} else {
+		min = 1
 	}
-
+	for k, _ := range matchArray[min] {
+		amps[k] = findAmpliconsInRange(fMatches[k], rMatches[k], maxLen, len(*r))
+	}
+	
+	if len(afMatches) < len(arMatches) {
+		min = 2
+	} else {
+		min = 3
+	}
+	for k, _ := range matchArray[min] {
+		antiAmps[k] = findAmpliconsInRange(arMatches[k], afMatches[k], maxLen, len(*r))
+	}
+	
 	for _, ampArray := range amps {
 		for i := 0; i < len(ampArray); i++ {
 			ampArray[i].getAmpliconSeq(len(*r))
 		}
 	}
 
+	for _, ampArray := range antiAmps {
+		for i := 0; i < len(ampArray); i++ {
+			ampArray[i].getAmpliconSeq(len(*r))
+		}
+	}
+	
 	for _, ampArray := range amps {
+		for _, amp := range ampArray {
+			fmt.Printf("%d\t%s\t%s\n", len(amp.seq), amp.seq, amp.genome.name)
+		}
+	}
+	
+	for _, ampArray := range antiAmps {
 		for _, amp := range ampArray {
 			fmt.Printf("%d\t%s\t%s\n", len(amp.seq), amp.seq, amp.genome.name)
 		}
@@ -135,6 +189,7 @@ func findAmpliconsInRange(forwardMatches, reverseMatches []Match, size, reverseL
 
 	return out
 }
+
 
 func findMatches(re *regexp.Regexp, g *Genome) []Match {
 	var out []Match
