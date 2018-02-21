@@ -3,8 +3,6 @@
 Mutates the passed-in Primer objects.
 
 """
-import difflib
-
 def get_degens(primers, genomes, ignore_percent):
     """Calculates and sets the degens for a list of primers.
 
@@ -44,37 +42,49 @@ def get_degens(primers, genomes, ignore_percent):
 
         index = _find_index(primer.sequence, genomes)
 
-        if index != -1:
-            for i in range(primer.length):
+        if index == -1:
+            print("Primer {} removed: Didn't occur naturally in any "
+                  "reference genomes".format(primer.name))
+            primers.remove(primer)
+            continue
 
-                snps = {"A": 0,
-                        "C": 0,
-                        "G": 0,
-                        "T": 0}
+        for i in range(primer.length):
 
-                for genome in genomes:
-                    base = genome[index + i]
+            snps = {"A": 0,
+                    "C": 0,
+                    "G": 0,
+                    "T": 0}
 
-                    if (primer.sequence[i] != base
-                            and base != "-" and
-                            base not in degens[i]):
+            for genome in genomes:
+                base = genome[index + i]
 
-                        snps[base] += 1
+                if (primer.sequence[i] != base
+                        and base != "-" and
+                        base not in degens[i]):
 
-                        # Only consider degens if the base occurs in more
-                        # than (100 - ignore_percent) of genomes
-                        current_percentage = snps[base] / len(genomes)
-                        if (current_percentage) > (1 - ignore_percent):
-                            degens[i].append(base)
+                    snps[base] += 1
 
-            new_seq = ""
-            for degen in degens:
-                new_seq += _get_code(sorted(degen))
+                    # Only consider degens if the base occurs in more
+                    # than [ignore_percent] of genomes
+                    current_percentage = 1 - (snps[base] / len(genomes))
+                    if current_percentage > ignore_percent:
+                        degens[i].append(base)
 
-            if primer.orientation == "reverse":
-                new_seq = _reverse_complement(new_seq)
+        new_seq = ""
+        for degen in degens:
+            new_seq += _get_code(sorted(degen))
 
-            primer.set_sequence(new_seq)
+        if primer.orientation == "reverse":
+            new_seq = _reverse_complement(new_seq)
+
+        num_degens = 0
+        for base in new_seq:
+            if base not in "ACGT":
+                num_degens += 1
+        if num_degens > 10:
+            print("Primer {} removed: > 10 degens".format(primer.name))
+
+        primer.set_sequence(new_seq)
 
 
 def _reverse_complement(sequence):
