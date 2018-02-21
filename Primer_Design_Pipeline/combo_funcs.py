@@ -410,7 +410,7 @@ class Combo:
         if ut:
             for primer in [self.forward, self.reverse]:
                 out.append([self.target,
-                            primer.ordering_info["primer.name"],
+                            primer.ordering_info["primer_name"],
                             primer.ordering_info["combined_name"],
                             primer.sequence,
                             primer.ordering_info["final_name"],
@@ -423,7 +423,7 @@ class Combo:
         else:
             for primer in [self.forward, self.reverse]:
                 out.append([self.target,
-                            primer.ordering_info["primer.name"],
+                            primer.ordering_info["primer_name"],
                             primer.ordering_info["combined_name"],
                             primer.sequence,
                             primer.ordering_info["final_name"],
