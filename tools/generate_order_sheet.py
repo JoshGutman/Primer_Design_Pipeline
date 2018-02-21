@@ -6,15 +6,15 @@ import io
 import os
 
 
-def combos_to_csv(outfile, infile, id_str):
+def combos_to_csv(outfile, infile, id_str, ut):
     ids = [int(i) for i in id_str.split(",")]
     combos = unpickle_combos(infile)
     for combo_id in ids:
         combo = get_combo_from_id(combos, combo_id)
         if combo is not None:
-            order_info = combo.get_order_info()
+            order_info = combo.get_order_info(ut)
             amp_info = combo.get_amplicon_info()
-            output_to_csv(outfile, order_info, amp_info)
+            output_to_csv(outfile, order_info, amp_info, ut)
 
 
 def unpickle_combos(file):
@@ -29,16 +29,20 @@ def get_combo_from_id(combos, combo_id):
             return combo
 
 
-def output_to_csv(file, order_info, amplicon_info):
+def output_to_csv(file, order_info, amplicon_info, ut):
     rows = read_csv(file)
     
     # If file is empty
     if not rows:
-        columns = ["Type of Target", "Target", "Primer", "Combined_name",
-                   "Primer (5'-3')", "Final_name", "UT + Sequence", "To order",
-                   "Tm","Amplicon", "Amplicon length", "Amplicon Length + UT",
-                   "SNP position", "SNP call", "2nd SNP call",
-                   "OutGroup SNP call"]
+        if ut:
+            columns = ["Target", "Primer", "Combined_name",
+                       "Primer (5'-3')", "Final_name", "UT + Sequence", "To order",
+                       "Tm","Amplicon", "Amplicon length", "Amplicon Length + UT"]
+        else:
+            columns = ["Target", "Primer", "Combined_name",
+                       "Primer (5'-3')", "Final_name", "To order",
+                       "Tm","Amplicon", "Amplicon length"]
+            
         empty_row = ["" for item in columns]
         rows.append(columns)
         rows.append(empty_row)
@@ -95,6 +99,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", help="[REQUIRED] Path to output .csv file", required=True)
     parser.add_argument("-p", "--primers", help="[REQUIRED] Comma-delimited IDs of primers to output", required=True)
     parser.add_argument("-i", "--input", help="Path to input .pickle file", default="combos.pickle")
+    parser.add_argument("-ut", "--universal_tail", help="Output Universal Tail information (default False)", const=True, nargs="?", default=False)
 
     args = parser.parse_args()
-    combos_to_csv(args.output, args.input, args.primers)
+    combos_to_csv(args.output, args.input, args.primers, args.universal_tail)

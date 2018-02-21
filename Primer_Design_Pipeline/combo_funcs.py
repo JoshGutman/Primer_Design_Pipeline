@@ -392,7 +392,7 @@ class Combo:
             self.amplicon = fields[1]
             self.amp_len = fields[0]
 
-    def get_order_info(self):
+    def get_order_info(self, ut):
         """Gets the ordering info for the forward and reverse primers.
 
         Gets the ordering info for the forward and reverse primers in the form
@@ -407,15 +407,31 @@ class Combo:
 
         """
         out = []
-        for primer in [self.forward, self.reverse]:
-            out.append(["", self.target, primer.ordering_info["primer_name"],
-                        primer.ordering_info["combined_name"], primer.sequence,
-                        primer.ordering_info["final_name"],
-                        primer.ordering_info["sequence_tail"],
-                        primer.ordering_info["to_order"],
-                        primer.ordering_info["tm"],
-                        self.amplicon, str(len(self.amplicon)),
-                        str(len(self.amplicon)+36), "", "", "", ""])
+        if ut:
+            for primer in [self.forward, self.reverse]:
+                out.append([self.target,
+                            primer.ordering_info["primer.name"],
+                            primer.ordering_info["combined_name"],
+                            primer.sequence,
+                            primer.ordering_info["final_name"],
+                            primer.ordering_info["sequence_tail"],
+                            primer.ordering_info["to_order"],
+                            primer.ordering_info["tm"],
+                            self.amplicon,
+                            str(len(self.amplicon)),
+                            str(len(self.amplicon)+36)])
+        else:
+            for primer in [self.forward, self.reverse]:
+                out.append([self.target,
+                            primer.ordering_info["primer.name"],
+                            primer.ordering_info["combined_name"],
+                            primer.sequence,
+                            primer.ordering_info["final_name"],
+                            primer.ordering_info["to_order"],
+                            primer.ordering_info["tm"],
+                            self.amplicon,
+                            str(len(self.amplicon)),
+            
         return out
 
     def get_amplicon_info(self):
