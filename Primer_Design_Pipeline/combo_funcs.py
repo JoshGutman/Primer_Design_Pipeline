@@ -430,7 +430,7 @@ class Combo:
                             primer.ordering_info["to_order"],
                             primer.ordering_info["tm"],
                             self.amplicon,
-                            str(len(self.amplicon)),
+                            str(len(self.amplicon))])
             
         return out
 
