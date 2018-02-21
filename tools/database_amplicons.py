@@ -16,11 +16,11 @@ def database_amplicons(directory, execute, primer_id, forward, reverse, amp_size
     groups, species_names = _split_files(files)
     temp_dir = _make_temp_dir()
     file_list = _make_temp_files(groups, temp_dir)
-    main_job = _make_job(groups, file_list, neben_path, primer, amp_size, target, keep)
+    main_job = _make_job(groups, file_list, neben_path, primer, amp_size, target)
 
     if execute:
         job_num = _run_job(main_job)
-        results_job = _make_results_job(job_num, target, groups, num_files, species_names)
+        results_job = _make_results_job(job_num, target, groups, num_files, species_names, keep)
         _run_job(results_job)
         
 
