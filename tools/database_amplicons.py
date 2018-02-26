@@ -79,7 +79,7 @@ def _split_files(files):
             time_total = 8
 
         group.append(file)
-        time_total += .6
+        time_total += .5
 
     if len(group) > 0:
         out.append(group)
@@ -98,7 +98,7 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
         outfile.write("#!/bin/bash\n")
         outfile.write("#SBATCH --job-name=database_amplicon\n")
         outfile.write("#SBATCH --array=0-{}\n".format(num_jobs-1))
-        outfile.write("#SBATCH --time=1:30:00\n")
+        outfile.write("#SBATCH --time=1:00:00\n")
         outfile.write("#SBATCH --mem=10000\n")
         outfile.write("#SBATCH --output=dba_%A.out\n")
         outfile.write("#SBATCH --open-mode=append\n")
@@ -115,9 +115,9 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
 
         if target:
             species_name = os.path.dirname(groups[0][0]).split("/")[-1]
-            subprocess.run('touch tmp/{}_output-0.txt\n'.format(species_name), shell=True)
-            subprocess.run('touch tmp/{}_output-1.txt\n'.format(species_name), shell=True)
-            subprocess.run('touch tmp/{}_output-2.txt\n'.format(species_name), shell=True)
+            subprocess.run('touch temp/{}_output-0.txt\n'.format(species_name), shell=True)
+            subprocess.run('touch temp/{}_output-1.txt\n'.format(species_name), shell=True)
+            subprocess.run('touch temp/{}_output-2.txt\n'.format(species_name), shell=True)
             
             outfile.write("while read F; do\n")
             outfile.write("\tWC=`{} -m {} -f {} -r {} -g $F | wc -l`".format(
@@ -128,11 +128,11 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
             outfile.write("\tNUM_AMPS=(${WC// / })\n")
             outfile.write("\tBASENAME=$(basename $F)\n")
             outfile.write("\tif [ $NUM_AMPS -eq 0 ]\n\tthen\n")
-            outfile.write("\t\t echo $BASENAME >> tmp/{}_output-0.txt\n".format(species_name))
+            outfile.write("\t\t echo $BASENAME >> temp/{}_output-0.txt\n".format(species_name))
             outfile.write("\telif [ $NUM_AMPS -eq 1 ]\n\tthen\n")
-            outfile.write("\t\t echo $BASENAME >> tmp/{}_output-1.txt\n".format(species_name))
+            outfile.write("\t\t echo $BASENAME >> temp/{}_output-1.txt\n".format(species_name))
             outfile.write("\telse\n")
-            outfile.write("\t\t echo $BASENAME >> tmp/{}_output-2.txt\n".format(species_name))
+            outfile.write("\t\t echo $BASENAME >> temp/{}_output-2.txt\n".format(species_name))
             outfile.write("\tfi\n")
             
 
@@ -141,7 +141,7 @@ def _make_job(groups, file_list, neben_path, primer, amp_size, target):
             outfile.write("while read F; do\n")
             outfile.write("\tPARENT_ABS=`dirname $F`\n")
             outfile.write("\tPARENT=`basename $PARENT_ABS`\n")
-            outfile.write('\tOUTFILE=tmp/"$PARENT"_output.txt\n')
+            outfile.write('\tOUTFILE=temp/"$PARENT"_output.txt\n')
             outfile.write("\t{} -m {} -f {} -r {} -g $F | head -1 >> $OUTFILE\n".format(
                 neben_path,
                 amp_size+50,
@@ -176,7 +176,7 @@ def _make_results_job(job_num, target, groups, num_files, species_names, keep):
             outfile.write("touch {}\n".format(results_name))
 
             outfile.write("for i in {0..2}; do\n")
-            outfile.write("\tWC=`wc -l tmp/{}_output-$i.txt`\n".format(species_name))
+            outfile.write("\tWC=`wc -l temp/{}_output-$i.txt`\n".format(species_name))
             outfile.write("\tNUM_LINES=(${WC// / })\n")
             outfile.write('\tPERCENT=`echo "scale = 4; ($NUM_LINES / {}) * 100" | bc`\n'.format(num_files))
             outfile.write("\tif [ $i -eq 2 ]\n\tthen\n")
@@ -196,14 +196,14 @@ def _make_results_job(job_num, target, groups, num_files, species_names, keep):
             outfile.write("\telse\n")
             outfile.write('\t\techo "$i Amplicons:" >> {}\n'.format(results_name))
             outfile.write("\tfi\n")
-            outfile.write("\tcat tmp/{}_output-$i.txt >> {}\n".format(species_name, results_name))
+            outfile.write("\tcat temp/{}_output-$i.txt >> {}\n".format(species_name, results_name))
             outfile.write('\techo >> {}\n'.format(results_name))
             outfile.write("done\n")
 
         if not target:
             output_files = []
             for species in species_names:
-                output_files.append((species, "tmp/{}_output.txt".format(species)))
+                output_files.append((species, "temp/{}_output.txt".format(species)))
 
             # Make array of species names
             outfile.write("SPECIES=(")
@@ -240,27 +240,25 @@ def _make_results_job(job_num, target, groups, num_files, species_names, keep):
             outfile.write("done\n")
 
 
-        outfile.write("if [ -s {} ]\nthen\n".format(results_name))
+        outfile.write("if ! [ -s {} ]\nthen\n".format(results_name))
         outfile.write('\techo "No amplicons found" >> {}\n'.format(results_name))
         outfile.write("fi\n")
 
         if not keep:
-            outfile.write("rm -r tmp/")
-
-        
+            outfile.write("rm -r temp/")
 
     return outfile_name
 
 
 
 def _make_temp_dir():
-    tmp_dir = os.path.join(os.getcwd(), "tmp")
+    tmp_dir = os.path.join(os.getcwd(), "temp")
     if os.path.exists(tmp_dir):
         print("Error - {} directory already exists. Please delete it and try"
               " again".format(tmp_dir))
         sys.exit(1)
     else:
-        subprocess.run("mkdir tmp", shell=True)
+        subprocess.run("mkdir temp", shell=True)
 
     return tmp_dir
 
