@@ -3,6 +3,8 @@
 Mutates the passed-in Primer objects.
 
 """
+from Bio import Seq
+
 def get_degens(primers, genomes, ignore_percent):
     """Calculates and sets the degens for a list of primers.
 
@@ -77,12 +79,10 @@ def get_degens(primers, genomes, ignore_percent):
         if primer.orientation == "reverse":
             new_seq = _reverse_complement(new_seq)
 
-        num_degens = 0
-        for base in new_seq:
-            if base not in "ACGT":
-                num_degens += 1
-        if num_degens > 10:
-            print("Primer {} removed: > 10 degens".format(primer.name))
+        if _num_combos(new_seq) > 256:
+            print("Primer {} removed: > 256 possible sequences"
+                  .format(primer.name))
+            primers.remove(primer)
 
         primer.set_sequence(new_seq)
 
@@ -177,3 +177,22 @@ def _get_code(bases):
                          " {}".format(bases))
     else:
         return degen_dict[bases_str]
+
+
+def _num_combos(seq):
+    """Calculates the amount of possible sequences of a degenerate sequence.
+
+    Args:
+        seq (str): Degenerate sequence.
+
+    Returns:
+        int: Number of possible non-degenerate sequences.
+
+    """
+    degen_dict = Seq.IUPAC.IUPACData.ambiguous_dna_values
+    out = 1
+
+    for base in seq:
+        out *= len(degen_dict[base])
+
+    return out
