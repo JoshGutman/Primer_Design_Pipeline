@@ -60,6 +60,10 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
         
         combos = get_combos(primers, lower, upper)
+        if len(combos) == 0:
+            print("No suitable primer-pairs found for {}".format(target))
+            os.chdir("..")
+            continue
 
         for combo in combos:
 
