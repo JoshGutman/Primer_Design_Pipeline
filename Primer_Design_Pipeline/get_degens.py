@@ -40,8 +40,8 @@ def get_degens(primers, genomes, ignore_percent):
         if primer.orientation == "reverse":
             primer.sequence = _reverse_complement(primer.sequence)
 
-        degens = [[primer.sequence[i]] for i in range(primer.length)]
-
+        #degens = [[primer.sequence[i]] for i in range(primer.length)]
+        degens = [[] for i in range(primer.length)]
         index = _find_index(primer.sequence, genomes)
 
         if index == -1:
@@ -57,6 +57,13 @@ def get_degens(primers, genomes, ignore_percent):
                     "G": 0,
                     "T": 0}
 
+            degen_dict = {'R': 'AG', 'Y': 'CT', 'S': 'CG',
+                          'W': 'AT', 'K': 'GT', 'M': 'AC',
+                          'B': 'CGT', 'D': 'AGT', 'H': 'ACT',
+                          'V': 'ACG', 'N': 'ACGT'}
+
+            
+
             for genome in genomes:
                 base = genome[index + i]
 
@@ -64,7 +71,12 @@ def get_degens(primers, genomes, ignore_percent):
                         and base != "-" and
                         base not in degens[i]):
 
-                    snps[base] += 1
+
+                    if base in degen_dict:
+                        for d in degen_dict[base]:
+                            snps[d] += 1
+                    else:
+                        snps[base] += 1
 
                     # Only consider degens if the base occurs in more
                     # than [ignore_percent] of genomes
@@ -168,7 +180,9 @@ def _get_code(bases):
                   "CGT": "B", "AGT": "D", "ACT": "H",
                   "ACG": "V", "ACGT": "N"}
 
-    if len(bases) == 1:
+    if len(bases) == 0:
+        return "N"
+    elif len(bases) == 1:
         return bases_str
 
     if bases_str not in degen_dict:
