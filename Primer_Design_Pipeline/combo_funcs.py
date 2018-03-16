@@ -335,8 +335,8 @@ class Combo:
         self.forward = forward_primer
         self.reverse = reverse_primer
         self.name = "{} - {}".format(self.forward.name, self.reverse.name)
-        self.amplicon = None
-        self.amp_len = None
+        self.amplicon = ""
+        self.amp_len = 0
         self.target = None
         self.primer_name = None
         self.combined_name = None

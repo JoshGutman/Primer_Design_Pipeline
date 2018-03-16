@@ -212,6 +212,17 @@ def amplicons_blast_db(combos):
                            Constants.target_db,
                            FileNames.neben_output),
                        shell=True)
+
+        # Find the largest amplicon in target genomes
+        subprocess.run("sort -rn -k1,1 -o {} {}".format(FileNames.neben_output))
+        with open(FileNames.neben_output, "rU") as f:        
+            largest_amp = f.readline()
+        if largest_amp:
+            fields = largest_amp.split()
+            if fields[0] > len(combo.amplicon):
+                combo.amplicon = fields[1]
+                combo.amp_len = int(fields[0])
+
         _num_amplicons(combo, True)
         
         subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 "
