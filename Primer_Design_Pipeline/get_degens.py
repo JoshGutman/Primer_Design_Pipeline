@@ -71,18 +71,21 @@ def get_degens(primers, genomes, ignore_percent):
                         and base != "-" and
                         base not in degens[i]):
 
-
+                    # Base in genome is degen
                     if base in degen_dict:
                         for d in degen_dict[base]:
                             snps[d] += 1
+                            current_percentage = snps[d] / len(genomes)
+                            if current_percentage > ignore_percent:
+                                degens[i].append(d)
+                        
                     else:
                         snps[base] += 1
-
-                    # Only consider degens if the base occurs in more
-                    # than [ignore_percent] of genomes
-                    current_percentage = 1 - (snps[base] / len(genomes))
-                    if current_percentage > ignore_percent:
-                        degens[i].append(base)
+                        # Only consider degens if the base occurs in more
+                        # than [ignore_percent] of genomes
+                        current_percentage = snps[base] / len(genomes)
+                        if current_percentage > ignore_percent:
+                            degens[i].append(base)
 
         new_seq = ""
         for degen in degens:
