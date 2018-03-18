@@ -96,7 +96,7 @@ def get_degens(primers, genomes, ignore_percent):
 
         if _num_combos(new_seq) > 256:
             print("Primer {} removed: > 256 possible sequences ({})"
-                  .format(primer.name, primer.sequence))
+                  .format(primer.name, new_seq))
             primers.remove(primer)
 
         primer.set_sequence(new_seq)
