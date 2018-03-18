@@ -76,7 +76,7 @@ def get_degens(primers, genomes, ignore_percent):
                         for d in degen_dict[base]:
                             snps[d] += 1
                             current_percentage = snps[d] / len(genomes)
-                            if current_percentage > ignore_percent:
+                            if current_percentage > (1-ignore_percent):
                                 degens[i].append(d)
                         
                     else:
@@ -84,7 +84,7 @@ def get_degens(primers, genomes, ignore_percent):
                         # Only consider degens if the base occurs in more
                         # than [ignore_percent] of genomes
                         current_percentage = snps[base] / len(genomes)
-                        if current_percentage > ignore_percent:
+                        if current_percentage > (1-ignore_percent):
                             degens[i].append(base)
 
         new_seq = ""
@@ -95,8 +95,8 @@ def get_degens(primers, genomes, ignore_percent):
             new_seq = _reverse_complement(new_seq)
 
         if _num_combos(new_seq) > 256:
-            print("Primer {} removed: > 256 possible sequences"
-                  .format(primer.name))
+            print("Primer {} removed: > 256 possible sequences ({})"
+                  .format(primer.name, primer.sequence))
             primers.remove(primer)
 
         primer.set_sequence(new_seq)

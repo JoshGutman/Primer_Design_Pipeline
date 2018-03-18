@@ -61,7 +61,7 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
         
         combos = get_combos(primers, lower, upper)
         if len(combos) == 0:
-            print("No suitable primer-pairs found for {}".format(target))
+            print("No suitable primer-pairs found for {}\n".format(target))
             os.chdir("..")
             continue
 
@@ -214,7 +214,7 @@ def amplicons_blast_db(combos):
                        shell=True)
 
         # Find the largest amplicon in target genomes
-        subprocess.run("sort -rn -k1,1 -o {} {}".format(FileNames.neben_output))
+        subprocess.run("sort -rn -k1,1 -o {} {}".format(FileNames.neben_output, FileNames.neben_output))
         with open(FileNames.neben_output, "rU") as f:        
             largest_amp = f.readline()
         if largest_amp:
