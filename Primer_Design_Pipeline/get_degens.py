@@ -63,8 +63,11 @@ def get_degens(primers, genomes, ignore_percent):
                           'V': 'ACG', 'N': 'ACGT'}
 
             
-
+            print("\n\n\nsequence:\t{}".format(primer.sequence))
             for genome in genomes:
+                
+                print("genome  :\t{}".format(genome[index:(index + primer.length)]))
+                
                 base = genome[index + i]
 
                 if (primer.sequence[i] != base
