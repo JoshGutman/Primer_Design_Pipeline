@@ -220,7 +220,7 @@ def amplicons_blast_db(combos):
             largest_amp = f.readline()
         if largest_amp:
             fields = largest_amp.split()
-            if fields[0] > len(combo.amplicon):
+            if int(fields[0]) > len(combo.amplicon):
                 combo.amplicon = fields[1]
                 combo.amp_len = int(fields[0])
 
