@@ -206,7 +206,7 @@ def amplicons_blast_db(combos):
         # Static size of 500???
         subprocess.run("touch {}".format(FileNames.neben_output), shell=True)
         subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 "
-                       "-f {} -r {} -g {} > {}".format(
+                       "-f {} -r {} -g {} -m 500 > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
                            combo.reverse.sequence,
@@ -227,7 +227,7 @@ def amplicons_blast_db(combos):
         _num_amplicons(combo, True)
         
         subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 "
-                       "-f {} -r {} -g {} > {}".format(
+                       "-f {} -r {} -g {} -m 500 > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
                            combo.reverse.sequence,
