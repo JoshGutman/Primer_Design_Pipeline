@@ -70,10 +70,8 @@ def get_degens(primers, genomes, ignore_percent):
                 
                 base = genome[index + i]
 
-                if (primer.sequence[i] != base
-                        and base != "-" and
-                        base not in degens[i]):
-
+                if (base != "-" and base not in degens[i]):
+                    
                     # Base in genome is degen
                     if base in degen_dict:
                         for d in degen_dict[base]:
