@@ -381,6 +381,9 @@ class Combo:
                            FileNames.neben_output),
                        shell=True)
 
+        subprocess.run("sort -rn -k1,1 -o {} {}".format(
+            FileNames.neben_output, FileNames.neben_output), shell=True)
+
         with open(FileNames.neben_output, "rU") as infile:
             out = infile.readline()
 

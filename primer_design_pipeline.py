@@ -206,7 +206,7 @@ def amplicons_blast_db(combos):
         # Static size of 500???
         subprocess.run("touch {}".format(FileNames.neben_output), shell=True)
         subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 "
-                       "-f {} -r {} -g {} -m 500 > {}".format(
+                       "-f {} -r {} -g {} -m 500 | head -1 > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
                            combo.reverse.sequence,
@@ -214,20 +214,23 @@ def amplicons_blast_db(combos):
                            FileNames.neben_output),
                        shell=True)
 
-        # Find the largest amplicon in target genomes
-        subprocess.run("sort -rn -k1,1 -o {} {}".format(FileNames.neben_output, FileNames.neben_output), shell=True)
-        with open(FileNames.neben_output, "rU") as f:        
-            largest_amp = f.readline()
-        if largest_amp:
-            fields = largest_amp.split()
-            if int(fields[0]) > len(combo.amplicon):
-                combo.amplicon = fields[1]
-                combo.amp_len = int(fields[0])
-
+        '''
+        if not reference_genome:
+            # Find the largest amplicon in target genomes
+            subprocess.run("sort -rn -k1,1 -o {} {}".format(FileNames.neben_output, FileNames.neben_output), shell=True)
+            with open(FileNames.neben_output, "rU") as f:        
+                largest_amp = f.readline()
+            if largest_amp:
+                fields = largest_amp.split()
+                if int(fields[0]) > len(combo.amplicon):
+                    combo.amplicon = fields[1]
+                    combo.amp_len = int(fields[0])
+        '''
+        
         _num_amplicons(combo, True)
         
         subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 "
-                       "-f {} -r {} -g {} -m 500 > {}".format(
+                       "-f {} -r {} -g {} -m 500 | head -1 > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
                            combo.reverse.sequence,
@@ -245,7 +248,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--directory", help="[REQUIRED] Path to reference fastas", required=True)
     parser.add_argument("-c", "--config", help="[REQUIRED] Path to primer3 config file", required=True)
     parser.add_argument("-g", "--genomes", help="[REQUIRED] Path to .txt file with target genomes", required=True)
-    parser.add_argument("-r", "--reference", help="Path to amplicon reference assembly .fasta", default="combined.seqs")
+    parser.add_argument("-r", "--reference", help="Path to amplicon reference assembly .fasta", default="target_database.seqs")
     parser.add_argument("-l", "--lower", help="Lower bound of amplicon size", type=int, default=150)
     parser.add_argument("-u", "--upper", help="Upper bound of amplicon size", type=int, default=250)
     parser.add_argument("-i", "--ignore", help="Threshold percentage to consider degens", type=float, default=2.0)
