@@ -195,18 +195,20 @@ def make_primer_fasta(multiplex, all_combos):
 def amplicons_blast_db(combos):
     
     def _num_amplicons(combo, target):
+        out = set()
         with open(FileNames.neben_output, "rU") as infile:
-            lines = infile.readlines()
+            for line in infile:
+                out.add(line.split()[2])
         if target:
-            combo.target_amplicons = len(lines)
+            combo.target_amplicons = len(out)
         else:
-            combo.non_target_amplicons = len(lines)
+            combo.non_target_amplicons = len(out)
         
     for combo in combos:
         # Static size of 500???
         subprocess.run("touch {}".format(FileNames.neben_output), shell=True)
         subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 "
-                       "-f {} -r {} -g {} -m 500 | head -1 > {}".format(
+                       "-f {} -r {} -g {} -m 500 > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
                            combo.reverse.sequence,
@@ -230,7 +232,7 @@ def amplicons_blast_db(combos):
         _num_amplicons(combo, True)
         
         subprocess.run("{}/Primer_Design_Pipeline/nv2_linux_64 "
-                       "-f {} -r {} -g {} -m 500 | head -1 > {}".format(
+                       "-f {} -r {} -g {} -m 500 > {}".format(
                            Constants.project_dir,
                            combo.forward.sequence,
                            combo.reverse.sequence,
