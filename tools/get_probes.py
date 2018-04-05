@@ -151,8 +151,9 @@ class Probe:
 
 
     def add_distance_score(self):
-        self.distance_score = min(self.start_idx,(self.combo.amp_len -
-                                                  (self.start_idx + self.size)))
+        self.distance_score = min(
+            self.start_idx,
+            len(self.combo.amplicon) - (self.start_idx + self.size))
 
     def add_gc_score(self):
         self.gc_content = (self.seq.count("G") + self.seq.count("C"))/self.size
