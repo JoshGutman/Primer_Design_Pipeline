@@ -72,12 +72,10 @@ def get_probes_at_size(combo, size):
     probe_size = min(size, len(combo.amplicon))
 
     for i in range(len(combo.amplicon)-probe_size):
-        probe = Probe(combo.amplicon[i:probe_size], i, combo)
+        probe = Probe(combo.amplicon[i:i+probe_size], i, combo)
         
         if probe.seq[0] == "G":
             continue
-
-        print("{}\t{}\t{}".format(probe.seq, probe.size, probe.start_idx))
         
         probe.add_distance_score()
         probe.add_gc_score()
@@ -123,19 +121,31 @@ def score_probes(probes):
 
 def output_probes(candidate_lists, output_file):
     with open(output_file, "w") as outfile:
+
+        fields = ["seq", "size", "start_idx", "distance_score", 
+                  "gc_score", "tm_score", "score"]
+        
+        for field in fields:
+            outfile.write(field + "\t")
+        outfile.write("\n")
+
         for candidate_list in candidate_lists:
             
-            outfile.write("{}.   {} - {}\n".format(
+            outfile.write("\n\n{}.   {} - {}\n".format(
                 candidate_list.combo.id,
                 candidate_list.combo.forward.name,
                 candidate_list.combo.reverse.name))
-            outfile.write("-------------------------------------------------\n")
+            outfile.write("-" *100 + "\n")
             
             for i in range(min(3, len(candidate_list.candidates))):
-                outfile.write("{}\t{}\t{}\n".format(
-                    candidate_list.candidates[i].seq,
-                    candidate_list.candidates[i].size,
-                    candidate_list.candidates[i].score))
+                for field in fields:
+                    to_write = getattr(candidate_list.candidates[i], field)
+                    if type(to_write) is float:
+                        to_write = format(to_write, ".2f")
+                    outfile.write("{}\t".format(to_write))
+                if candidate_list.candidates[i].combined_score == 0:
+                    outfile.write("[PERFECT]")
+                outfile.write("\n")
     
 
 
@@ -166,7 +176,7 @@ class Probe:
 
 
     def add_tm_score(self):
-        self.melting_tm = get_tm.get_tm(self.seq, self.combo.olgio_conc,
+        self.melting_tm = get_tm.get_tm(self.seq, self.combo.oligo_conc,
                                         self.combo.na_conc, self.combo.mg_conc)
 
         self.tm_diff = ((self.melting_tm[1] - self.combo.forward.tm[1]) +
