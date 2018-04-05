@@ -44,6 +44,11 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
         primers, mis_hits, non_target_hits = get_primers(config_file, target, directory, lower, upper, [oligo_conc, na_conc, mg_conc])
 
+        if len(primers) == 0:
+            print("No primers found for {}".format(target))
+            os.chdir("..")
+            continue
+
         for primer in primers:
             all_primers.append(primer)
 
@@ -67,6 +72,9 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
         for combo in combos:
 
+            combo.oligo_conc = oligo_conc
+            combo.na_conc = na_conc
+            combo.mg_conc = mg_conc
             
             combo.forward.tm = get_tm(combo.forward.sequence,
                                       oligo_conc, na_conc, mg_conc)
@@ -109,45 +117,35 @@ def primer_design_pipeline(target_file, directory, config_file, target_list,
 
 def remove_excess_files(directories):
 
+    def _del_files(filename):
+        try:
+            subprocess.run("rm {}*".format(filename), shell=True)
+        except FileNotFoundError as e:
+            print("Tried to delete {}, but couldn't find it".format(filename))
+            
     # Get rid of files in sub-directories
     for directory in directories:
+
+        to_delete = [FileNames.conflict_blast_input, directory,
+                     FileNames.neben_output, FileNames.modified_config_file,
+                     FileNames.primer3_output, FileNames.target_blast,
+                     FileNames.non_target_blast,
+                     os.path.basename(Constants.config_file),
+                     FileNames.muscle_input, FileNames.muscle_output,
+                     "primer_conflicts_blast.out"]
+        
         os.chdir(directory)
-
-        try:
-            subprocess.run("rm {}*".format(FileNames.conflict_blast_input), shell=True)
-            subprocess.run("rm {}*".format(directory), shell=True)
-
-            os.remove(FileNames.neben_output)
-            os.remove(FileNames.modified_config_file)
-            os.remove(FileNames.primer3_output)
-            os.remove(FileNames.target_blast)
-            os.remove(FileNames.non_target_blast)
-            os.remove(os.path.basename(Constants.config_file))
-            os.remove(FileNames.muscle_input)
-            os.remove(FileNames.muscle_output)
-            os.remove("primer_conflicts_blast.out")
-        except FileNotFoundError as e:
-            print("Exception occurred when trying to delete temporary files.\n"
-                  "The program has stopped trying to delete files, but is still running succesfully.\n"
-                  "Stacktrace:\n\n{}".format(e))
-
+        for file in to_delete:
+            _del_files(file)
         os.chdir("..")
 
-    # Get rid of all .fasta files from multifasta in outer-most directory
-    for directory in directories:
-        #os.remove(directory + ".fasta")
-        pass
+    # Get rid of files in outer directory
+    to_delete = ["primer_conflicts_blast.out", "all_primers",
+                 Constants.combined_seqs, Constants.target_db,
+                 Constants.non_target_db]
+    for file in to_delete:
+        _del_files(file)
 
-    try:
-        os.remove("primer_conflicts_blast.out")
-        subprocess.run("rm {}*".format("all_primers*"), shell=True)
-    except FileNotFoundError:
-        pass
-
-    subprocess.run("rm {}*".format(Constants.combined_seqs), shell=True)
-    subprocess.run("rm {}*".format(Constants.target_db), shell=True)
-    subprocess.run("rm {}*".format(Constants.non_target_db), shell=True)
-    
     
 
 def pickle_combos(all_combos):

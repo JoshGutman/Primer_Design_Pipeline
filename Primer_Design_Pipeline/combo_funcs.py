@@ -344,6 +344,9 @@ class Combo:
         self.target = None
         self.score = 0
         self.display_info = None
+        self.oligo_conc = 0
+        self.na_conc = 0
+        self.mg_conc = 0
 
         self.target_amplicons = 0
         self.non_target_amplicons = 0
