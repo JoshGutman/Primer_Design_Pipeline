@@ -76,6 +76,8 @@ def get_probes_at_size(combo, size):
         
         if probe.seq[0] == "G":
             continue
+
+        print("{}\t{}\t{}".format(probe.seq, probe.size, probe.start_idx))
         
         probe.add_distance_score()
         probe.add_gc_score()
@@ -142,10 +144,11 @@ class Probe:
 
     def __init__(self, seq, start_idx, combo):
         self.score = 0
-        self.size = 0
         self.seq = seq
+        self.size = len(seq)
         self.start_idx = start_idx
         self.combo = combo
+
 
     def add_distance_score(self):
         self.distance_score = min(self.start_idx,(self.combo.amp_len -
@@ -160,6 +163,7 @@ class Probe:
         else:
             self.gc_score = 0
 
+
     def add_tm_score(self):
         self.melting_tm = get_tm.get_tm(self.seq, self.combo.olgio_conc,
                                         self.combo.na_conc, self.combo.mg_conc)
@@ -173,6 +177,7 @@ class Probe:
             self.tm_score = (6 - abs(self.tm_diff))
         else:
             self.tm_score = (abs(self.tm_diff) - 8)
+
 
     def add_combined_score(self):
         self.combined_score = (self.distance_score +
