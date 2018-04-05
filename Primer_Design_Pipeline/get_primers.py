@@ -84,10 +84,16 @@ def modify_input_file(config_file, target, lower, upper, temp_args):
     with open(config_file, "U") as config_in, open(FileNames.modified_config_file, "w") as config_out:
         for line in config_in:
 
+            written = False
             for prefix in prefixes:
                 if line.startswith(prefix):
                     config_out.write("{}={}\n".format(prefix, prefixes[prefix]))
+                    written = True
+                    break
                     
+            if written:
+                continue
+            
             if line.startswith("PRIMER_NUM_RETURN"):
                 pass
 
