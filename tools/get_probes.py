@@ -199,7 +199,7 @@ class CandidateList:
 
     def __init__(self, combo, candidates):
         self.combo = combo
-        self.candidates = sorted(candidates, key=lambda probe: probe.score)
+        self.candidates = sorted(candidates, key=lambda probe: probe.score, reverse=True)
     
 
 
