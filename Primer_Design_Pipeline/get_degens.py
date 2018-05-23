@@ -78,6 +78,9 @@ def get_degens(primers, genomes, ignore_percent):
                         # Only consider degens if the base occurs in more
                         # than [ignore_percent] of genomes
                         current_percentage = snps[base] / len(genomes)
+                        print("test: current %: {}".format(current_percentage))
+                        print("test: snps: {}".format(snps))
+                        print()
                         if current_percentage > (1-ignore_percent):
                             degens[i].append(base)
 
