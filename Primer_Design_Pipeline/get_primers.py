@@ -4,7 +4,7 @@ import glob
 import sys
 from Bio import SeqIO
 
-from .setup import Constants, FileNames
+from setup import Constants, FileNames
 
 # Driver
 # Takes in primer3_template.txt, target.fasta, lower bound, upper bound
