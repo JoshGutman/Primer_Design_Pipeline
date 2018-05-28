@@ -15,7 +15,7 @@ def get_degens(primers, genomes, ignore_percent):
         primers (:obj:`list` of :obj:`Primer`): List of Primer objects.
         genomes (:obj:`list` of :obj:`str`): List of genomes.
         ignore_percent(float): A SNP will have to have to occur in at least
-            (1 - ignore_percent)% genomes for it to be considered a degen.
+            ignore_percent% genomes for it to be considered a degen.
 
     Returns:
         None.
@@ -26,19 +26,25 @@ def get_degens(primers, genomes, ignore_percent):
         Driver function.
 
         When looking for degens, an unique SNP (meaning the base and position)
-        will have to occur in at least (1 - ignore_percent)% of genomes before
+        will have to occur in at least ignore_percent% of genomes before
         it's considered a degen.
 
     """
-    if ignore_percent > 1:
+    if ignore_percent >= 1:
         ignore_percent /= 100
 
-    for primer in primers:
+    degen_dict = {'R': 'AG', 'Y': 'CT', 'S': 'CG',
+                  'W': 'AT', 'K': 'GT', 'M': 'AC',
+                  'B': 'CGT', 'D': 'AGT', 'H': 'ACT',
+                  'V': 'ACG', 'N': 'ACGT'}
+
+
+    for primer in primers[:]:
 
         primer.sequence = primer.sequence.upper()
 
         if primer.orientation == "reverse":
-            primer.sequence = _reverse_complement(primer.sequence)
+            primer.sequence = reverse_complement(primer.sequence)
 
         #degens = [[primer.sequence[i]] for i in range(primer.length)]
         degens = [[] for i in range(primer.length)]
@@ -56,42 +62,27 @@ def get_degens(primers, genomes, ignore_percent):
                     "C": 0,
                     "G": 0,
                     "T": 0}
-
-            degen_dict = {'R': 'AG', 'Y': 'CT', 'S': 'CG',
-                          'W': 'AT', 'K': 'GT', 'M': 'AC',
-                          'B': 'CGT', 'D': 'AGT', 'H': 'ACT',
-                          'V': 'ACG', 'N': 'ACGT'}
-
             
             for genome in genomes:
                 
-                base = genome[index + i]
+                base = genome[index + i].upper()
 
-                if (base != "-" and base not in degens[i]):
-                    
-                    # Base in genome is degen
-                    if base in degen_dict:
-                        continue
-                        
-                    else:
-                        snps[base] += 1
-                        # Only consider degens if the base occurs in more
-                        # than [ignore_percent] of genomes
-                        current_percentage = snps[base] / len(genomes)
-                        print("test: current %: {}".format(current_percentage))
-                        print("test: snps: {}".format(snps))
-                        print()
-                        if current_percentage > (1-ignore_percent):
-                            degens[i].append(base)
+                if base in snps and base not in degens[i]:
+                    snps[base] += 1
+                    # Only consider degens if the base occurs in more
+                    # than [ignore_percent] of genomes
+                    current_percentage = snps[base] / len(genomes)
+                    if current_percentage >= ignore_percent:
+                        degens[i].append(base)
 
         new_seq = ""
         for degen in degens:
-            new_seq += _get_code(sorted(degen))
+            new_seq += ambiguity_code(degen)
 
         if primer.orientation == "reverse":
-            new_seq = _reverse_complement(new_seq)
+            new_seq = reverse_complement(new_seq)
 
-        if _num_combos(new_seq) > 256:
+        if num_combos(new_seq) > 256:
             print("Primer {} removed: too degenerate ({})"
                   .format(primer.name, new_seq))
             primers.remove(primer)
@@ -99,7 +90,7 @@ def get_degens(primers, genomes, ignore_percent):
         primer.set_sequence(new_seq)
 
 
-def _reverse_complement(sequence):
+def reverse_complement(sequence):
     """Gets the reverse complement of a sequence.
 
     Args:
@@ -152,13 +143,14 @@ def _find_index(sequence, genomes):
 
     """
     for genome in genomes:
+        genome = genome.upper()
         idx = genome.find(sequence)
         if idx != -1:
             return idx
     return -1
 
 
-def _get_code(bases):
+def ambiguity_code(bases):
     """Gets the nucleotide ambiguity code.
 
     Args:
@@ -169,11 +161,10 @@ def _get_code(bases):
         str: Nucleotide ambiguity code.
 
     Raises:
-        ValueError: If a non-ACGT char is found in `bases` or
-            if `bases` is not sorted.
+        ValueError: If a non-ACGT char is found in `bases`.
 
     """
-    bases_str = "".join(bases).upper()
+    bases_str = "".join(sorted(bases)).upper()
 
     degen_dict = {"AG": "R", "CT": "Y", "CG": "S",
                   "AT": "W", "GT": "K", "AC": "M",
@@ -193,7 +184,7 @@ def _get_code(bases):
         return degen_dict[bases_str]
 
 
-def _num_combos(seq):
+def num_combos(seq):
     """Calculates the amount of possible sequences of a degenerate sequence.
 
     Args:
@@ -203,10 +194,16 @@ def _num_combos(seq):
         int: Number of possible non-degenerate sequences.
 
     """
+    seq = seq.upper()
     degen_dict = Seq.IUPAC.IUPACData.ambiguous_dna_values
     out = 1
 
     for base in seq:
-        out *= len(degen_dict[base])
+        try:
+            out *= len(degen_dict[base])
+        except KeyError:
+            raise ValueError("Non-ACGT char encountered when attempting to "
+                             "compute number of combos.\nSequence:"
+                             " {}".format(seq))
 
     return out
